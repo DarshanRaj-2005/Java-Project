@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Administrator {
-
+public class Administrator extends User  {
     List<Movie> movieList = new ArrayList<>();
     Scanner sc = new Scanner(System.in);
+
+    public Administrator(String name, String email, String phone, String password) {
+        super(name, email, phone, password);
+    }
+  
+   
 
     public void addMovie() {
 
@@ -51,5 +56,4 @@ public class Administrator {
         }
     }
 }
-
 
