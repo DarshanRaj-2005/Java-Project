@@ -42,7 +42,7 @@ public class Administrator extends User  {
         System.out.println("Movie added successfully!");
     }
 
-    public void viewMovies() {
+    public static void viewMovies() {
         MovieService.viewMovies();
 
     }

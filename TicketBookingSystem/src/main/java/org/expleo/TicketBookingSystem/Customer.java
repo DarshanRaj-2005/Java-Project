@@ -8,7 +8,7 @@ public class Customer extends User {
 
 
 
-    public void viewMovies() {
+    public static void viewMovies() {
      MovieService.viewMovies();
     }
 }
