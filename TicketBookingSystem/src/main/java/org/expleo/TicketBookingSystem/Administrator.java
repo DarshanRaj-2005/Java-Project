@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Administrator extends User  {
-    List<Movie> movieList = new ArrayList<>();
+  
     Scanner sc = new Scanner(System.in);
 
     public Administrator(String name, String email, String phone, String password) {
@@ -37,23 +37,14 @@ public class Administrator extends User  {
         String releaseDate = sc.nextLine();
 
         Movie movie = new Movie(id, title, genre, language, duration, releaseDate);
-        movieList.add(movie);
+        MovieService.movieList.add(movie);
 
         System.out.println("Movie added successfully!");
     }
 
     public void viewMovies() {
+        MovieService.viewMovies();
 
-        if (movieList.isEmpty()) {
-            System.out.println("No movies available.");
-            return;
-        }
-
-        System.out.println("Available Movies:");
-
-        for (Movie m : movieList) {
-            System.out.println(m.getTitle());
-        }
     }
 }
 
