@@ -1,4 +1,4 @@
-package org.expleo.TicketBookingSystem;
+package org.expleo.TicketBookingSystem.models;
 
 public class Customer extends User {
 

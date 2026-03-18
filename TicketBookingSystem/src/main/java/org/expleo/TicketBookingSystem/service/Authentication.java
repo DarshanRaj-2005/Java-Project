@@ -1,10 +1,10 @@
-package org.expleo.TicketBookingSystem;
-
-import org.expleo.TicketBookingSystem.Customer;
-import org.expleo.TicketBookingSystem.User;
+package org.expleo.TicketBookingSystem.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.expleo.TicketBookingSystem.models.Customer;
+import org.expleo.TicketBookingSystem.models.User;
 
 public class Authentication {
 
