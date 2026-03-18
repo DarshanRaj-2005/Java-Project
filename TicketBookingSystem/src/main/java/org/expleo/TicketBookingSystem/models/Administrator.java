@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.expleo.TicketBookingSystem.service.MovieService;
+
 public class Administrator {
 
     List<Movie> movieList = new ArrayList<>();
-    Scanner sc = new Scanner(System.in);//sdw
+    Scanner sc = new Scanner(System.in);
 
     public void addMovie() {
 
@@ -37,18 +39,9 @@ public class Administrator {
         System.out.println("Movie added successfully!");
     }
 
-    public void viewMovies() {
+    public static void viewMovies() {
+        MovieService.viewMovies();
 
-        if (movieList.isEmpty()) {
-            System.out.println("No movies available.");
-            return;
-        }
-
-        System.out.println("Available Movies:");
-
-        for (Movie m : movieList) {
-            System.out.println(m.getTitle());
-        }
     }
 }
 
