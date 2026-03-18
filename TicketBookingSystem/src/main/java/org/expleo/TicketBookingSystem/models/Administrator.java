@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Administrator {
 
     List<Movie> movieList = new ArrayList<>();
-    Scanner sc = new Scanner(System.in);
+    Scanner sc = new Scanner(System.in);//sdw
 
     public void addMovie() {
 
