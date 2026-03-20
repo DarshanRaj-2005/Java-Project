@@ -1,49 +1,67 @@
 package org.expleo.TicketBookingJavaProject.service;
 
+import java.util.List;
+import org.expleo.TicketBookingJavaProject.model.Seat;
+import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.model.*;
 import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl;
 
-import java.util.List;
-
 public class BookingService {
 
-    public List<City> getCities() {
-        return BookingRepositoryImpl.cities;
-    }
+	private SeatRepositoryImpl repo = new SeatRepositoryImpl();
 
-    public List<Theatre> getTheatres() {
-        return BookingRepositoryImpl.theatres;
-    }
+	public boolean validateTicketCount(int ticketCount) {
 
-    public List<Movie> getMovies() {
-        return BookingRepositoryImpl.movies;
-    }
+		List<Seat> seats = repo.getSeats();
 
-    public List<Showtime> getShowtimes() {
-        return BookingRepositoryImpl.showtimes;
-    }
+		int availableSeats = 0;
 
-    public void displayCities(List<City> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i).getName());
-        }
-    }
+		for (Seat seat : seats) {
+			if (seat.getStatus().equals("AVAILABLE")) {
+				availableSeats++;
+			}
+		}
 
-    public void displayTheatres(List<Theatre> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i).getName());
-        }
-    }
+		return ticketCount <= availableSeats;
+	}
 
-    public void displayMovies(List<Movie> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i).getTitle());
-        }
-    }
+	public List<City> getCities() {
+		return BookingRepositoryImpl.cities;
+	}
 
-    public void displayShowtimes(List<Showtime> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i).getTime());
-        }
-    }
+	public List<Theatre> getTheatres() {
+		return BookingRepositoryImpl.theatres;
+	}
+
+	public List<Movie> getMovies() {
+		return BookingRepositoryImpl.movies;
+	}
+
+	public List<Showtime> getShowtimes() {
+		return BookingRepositoryImpl.showtimes;
+	}
+
+	public void displayCities(List<City> list) {
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println((i + 1) + ". " + list.get(i).getName());
+		}
+	}
+
+	public void displayTheatres(List<Theatre> list) {
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println((i + 1) + ". " + list.get(i).getName());
+		}
+	}
+
+	public void displayMovies(List<Movie> list) {
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println((i + 1) + ". " + list.get(i).getTitle());
+		}
+	}
+
+	public void displayShowtimes(List<Showtime> list) {
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println((i + 1) + ". " + list.get(i).getTime());
+		}
+	}
 }
