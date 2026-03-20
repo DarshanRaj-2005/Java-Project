@@ -10,9 +10,21 @@ public class Seat {
         this.number = number;
         this.status = status;
     }
+    
+    public String getRow() {
+        return row;
+    }
+
+    public int getNumber() {
+        return number;
+    }
 
     public String getStatus() {
         return status;
+    }
+    
+    public String getSeatLabel() {
+        return row + number;
     }
 
 }
