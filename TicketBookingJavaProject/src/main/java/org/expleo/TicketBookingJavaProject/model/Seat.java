@@ -26,5 +26,9 @@ public class Seat {
     public String getSeatLabel() {
         return row + number;
     }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 }
