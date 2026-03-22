@@ -10,21 +10,25 @@ public class BookingService {
 
 	private SeatRepositoryImpl repo = new SeatRepositoryImpl();
 
-	public boolean validateTicketCount(int ticketCount) {
+    public boolean validateTicketCount(int ticketCount) {
 
-		List<Seat> seats = repo.getSeats();
+        if (ticketCount <= 0) {
+            return false;
+        }
 
-		int availableSeats = 0;
+        List<Seat> seats = repo.getSeats();
+        int availableSeats = 0;
 
-		for (Seat seat : seats) {
-			if (seat.getStatus().equals("AVAILABLE")) {
-				availableSeats++;
-			}
-		}
+        for (Seat seat : seats) {
+            if (seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
+                availableSeats++;
+            }
+        }
 
-		return ticketCount <= availableSeats;
-	}
-
+        return ticketCount <= availableSeats;
+    }
+    
+    
 	public List<City> getCities() {
 		return BookingRepositoryImpl.cities;
 	}
@@ -64,4 +68,6 @@ public class BookingService {
 			System.out.println((i + 1) + ". " + list.get(i).getTime());
 		}
 	}
+	
+	
 }
