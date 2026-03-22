@@ -1,11 +1,14 @@
 package org.expleo.TicketBookingJavaProject.controller;
+
 import org.expleo.TicketBookingJavaProject.model.*;
 import org.expleo.TicketBookingJavaProject.service.BookingService;
 import java.util.*;
+import org.expleo.TicketBookingJavaProject.service.MovieService;
 
 public class BookingController {
 
 	private BookingService service = new BookingService();
+	private MovieService service1 = new MovieService();
 	private Scanner sc = new Scanner(System.in);
 
 	public void startBookingFlow() {
@@ -41,6 +44,33 @@ public class BookingController {
 		System.out.println("Theatre: " + theatres.get(theatreChoice - 1).getName());
 		System.out.println("Movie: " + movies.get(movieChoice - 1).getTitle());
 		System.out.println("Showtime: " + shows.get(showChoice - 1).getTime());
+	}
+
+	public void searchMovie() {
+
+		System.out.println("1. Search by Title");
+		System.out.println("2. Search by Language");
+
+		int choice = sc.nextInt();
+		sc.nextLine();
+
+		if (choice == 1) {
+			System.out.println("Enter title:");
+			String title = sc.nextLine();
+
+			List<Movie> result = service1.searchByTitle(title);
+			service.displayMovies(result);
+
+		} else if (choice == 2) {
+			System.out.println("Enter language:");
+			String lang = sc.nextLine();
+
+			List<Movie> result = service1.searchByLanguage(lang);
+			service.displayMovies(result);
+
+		} else {
+			System.out.println("Invalid choice");
+		}
 	}
 
 	private SeatController seatController = new SeatController();
