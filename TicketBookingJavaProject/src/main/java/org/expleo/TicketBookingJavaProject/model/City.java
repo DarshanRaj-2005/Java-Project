@@ -12,4 +12,7 @@ public class City {
     public String getName() {
         return name;
     }
+    public int getId() {
+        return id;
+    }
 }

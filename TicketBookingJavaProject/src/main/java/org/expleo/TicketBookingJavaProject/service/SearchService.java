@@ -5,7 +5,7 @@ import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl
 
 import java.util.*;
 
-public class MovieService {
+public class SearchService {
 
 	public List<Movie> searchByTitle(String title) {
 
