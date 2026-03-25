@@ -6,23 +6,20 @@ import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
 
 public class BookingService {
 
-	private SeatRepositoryImpl repo = new SeatRepositoryImpl();
+    private SeatRepositoryImpl repo = new SeatRepositoryImpl();
 
-	public boolean validateTicketCount(int ticketCount) {
+    public boolean validateTicketCount(int ticketCount) {
 
-		if (ticketCount <= 0) {
-			return false;
-		}
+        if (ticketCount <= 0) return false;
 
-		List<Seat> seats = repo.getSeats();
-		int availableSeats = 0;
+        int available = 0;
 
-		for (Seat seat : seats) {
-			if (seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-				availableSeats++;
-			}
-		}
+        for (Seat s : repo.getSeats()) {
+            if (s.getStatus().equalsIgnoreCase("AVAILABLE")) {
+                available++;
+            }
+        }
 
-		return ticketCount <= availableSeats;
-	}
+        return ticketCount <= available;
+    }
 }

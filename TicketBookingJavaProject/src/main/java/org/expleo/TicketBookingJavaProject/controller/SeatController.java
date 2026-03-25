@@ -1,16 +1,14 @@
 package org.expleo.TicketBookingJavaProject.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
+import java.util.*;
 import org.expleo.TicketBookingJavaProject.model.Seat;
 import org.expleo.TicketBookingJavaProject.service.SeatService;
 
 public class SeatController {
-	private SeatService seatService = new SeatService();
-	private Scanner sc = new Scanner(System.in);
-	
+
+    private SeatService seatService = new SeatService();
+    private Scanner sc = new Scanner(System.in);
+
     public void showSeatSelectionPage() {
         displaySeatLayout();
         displayAvailableSeats();
@@ -34,99 +32,71 @@ public class SeatController {
             String symbol = seat.getStatus().equalsIgnoreCase("BOOKED") ? "[X]" : "[O]";
             System.out.print(seat.getSeatLabel() + symbol + "  ");
 
-            if (seat.getNumber() == 10) {
-                System.out.println();
-            }
+            if (seat.getNumber() == 10) System.out.println();
         }
     }
 
     public void displayAvailableSeats() {
-        List<Seat> availableSeats = seatService.getAvailableSeats();
-
         System.out.println("\nAvailable Seats:");
-        if (availableSeats.isEmpty()) {
-            System.out.println("No seats available.");
-            return;
-        }
-
-        for (Seat seat : availableSeats) {
-            System.out.print(seat.getSeatLabel() + " ");
+        for (Seat s : seatService.getAvailableSeats()) {
+            System.out.print(s.getSeatLabel() + " ");
         }
         System.out.println();
     }
 
     public void displayBookedSeats() {
-        List<Seat> bookedSeats = seatService.getBookedSeats();
-
         System.out.println("\nBooked Seats:");
-        if (bookedSeats.isEmpty()) {
-            System.out.println("No seats booked.");
-            return;
-        }
-
-        for (Seat seat : bookedSeats) {
-            System.out.print(seat.getSeatLabel() + " ");
+        for (Seat s : seatService.getBookedSeats()) {
+            System.out.print(s.getSeatLabel() + " ");
         }
         System.out.println();
     }
 
     public Seat selectSingleSeat() {
         System.out.print("\nEnter seat number: ");
-        String seatLabel = sc.nextLine().trim().toUpperCase();
+        String label = sc.nextLine().toUpperCase();
 
-        String validationMessage = seatService.validateSingleSeatSelection(seatLabel);
+        String validation = seatService.validateSingleSeatSelection(label);
 
-        if (!validationMessage.equals("VALID")) {
-            System.out.println(validationMessage);
+        if (!validation.equals("VALID")) {
+            System.out.println(validation);
             return null;
         }
 
-        boolean booked = seatService.bookSeat(seatLabel);
+        Seat seat = seatService.getSeatByLabel(label);
+        System.out.println("Seat selected: " + seat.getSeatLabel());
 
-        if (booked) {
-            Seat seat = seatService.getSeatByLabel(seatLabel);
-            System.out.println("Seat selected successfully: " + seat.getSeatLabel());
-            return seat;
-        } else {
-            System.out.println("Seat booking failed. Please try again.");
-            return null;
-        }
+        return seat;
     }
 
-    public List<Seat> selectMultipleSeats(int ticketCount) {
-        System.out.print("\nEnter " + ticketCount + " seat number(s) separated by comma: ");
+    public List<Seat> selectMultipleSeats(int count) {
+
+        System.out.print("\nEnter seats (comma separated): ");
         String input = sc.nextLine();
 
-        String[] seatArray = input.split(",");
-        List<String> seatLabels = new ArrayList<>();
-
-        for (String seat : seatArray) {
-            String seatLabel = seat.trim().toUpperCase();
-            if (!seatLabel.isEmpty()) {
-                seatLabels.add(seatLabel);
-            }
+        List<String> labels = new ArrayList<>();
+        for (String s : input.split(",")) {
+            labels.add(s.trim().toUpperCase());
         }
 
-        String validationMessage = seatService.validateMultipleSeatSelection(seatLabels, ticketCount);
+        String validation = seatService.validateMultipleSeatSelection(labels, count);
 
-        if (!validationMessage.equals("VALID")) {
-            System.out.println(validationMessage);
+        if (!validation.equals("VALID")) {
+            System.out.println(validation);
             return null;
         }
 
-        List<Seat> selectedSeats = seatService.bookMultipleSeats(seatLabels);
-
-        if (selectedSeats == null) {
-            System.out.println("Seat booking failed. Please try again.");
-            return null;
+        List<Seat> result = new ArrayList<>();
+        for (String label : labels) {
+            result.add(seatService.getSeatByLabel(label));
         }
 
-        System.out.print("Seats selected successfully: ");
-        for (Seat seat : selectedSeats) {
-            System.out.print(seat.getSeatLabel() + " ");
-        }
-        System.out.println();
+        return result;
+    }
 
-        return selectedSeats;
+    public void confirmSeats(List<Seat> seats) {
+        for (Seat s : seats) {
+            s.setStatus("BOOKED");
+        }
     }
 }

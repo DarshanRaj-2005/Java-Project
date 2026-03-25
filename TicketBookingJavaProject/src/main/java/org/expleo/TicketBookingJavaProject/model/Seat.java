@@ -1,7 +1,7 @@
 package org.expleo.TicketBookingJavaProject.model;
 
 public class Seat {
-	private String row;
+    private String row;
     private int number;
     private String status; 
 
@@ -30,5 +30,4 @@ public class Seat {
     public void setStatus(String status) {
         this.status = status;
     }
-
 }
