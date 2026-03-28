@@ -1,5 +1,10 @@
 package org.expleo.TicketBookingJavaProject.model;
 
-public class Customer {
+import org.expleo.TicketBookingJavaProject.service.MovieService;
 
+public class Customer {
+	  public static void viewMovies() {
+	        MovieService.viewMovies();
+
+	    }
 }
