@@ -1,124 +1,79 @@
 package org.expleo.TicketBookingJavaProject.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 import org.expleo.TicketBookingJavaProject.model.Seat;
 import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
 
 public class SeatService {
-	private SeatRepositoryImpl repo = new SeatRepositoryImpl();
+
+    private SeatRepositoryImpl repo = new SeatRepositoryImpl();
 
     public List<Seat> getSeatLayout() {
         return repo.getSeats();
     }
 
     public List<Seat> getAvailableSeats() {
-        List<Seat> seats = repo.getSeats();
-        List<Seat> availableSeats = new ArrayList<>();
-
-        for (Seat seat : seats) {
-            if (seat.getStatus().equals("AVAILABLE")) {
-                availableSeats.add(seat);
+        List<Seat> result = new ArrayList<>();
+        for (Seat s : repo.getSeats()) {
+            if (s.getStatus().equalsIgnoreCase("AVAILABLE")) {
+                result.add(s);
             }
         }
-        return availableSeats;
+        return result;
     }
 
     public List<Seat> getBookedSeats() {
-        List<Seat> seats = repo.getSeats();
-        List<Seat> bookedSeats = new ArrayList<>();
-
-        for (Seat seat : seats) {
-            if (seat.getStatus().equals("BOOKED")) {
-                bookedSeats.add(seat);
+        List<Seat> result = new ArrayList<>();
+        for (Seat s : repo.getSeats()) {
+            if (s.getStatus().equalsIgnoreCase("BOOKED")) {
+                result.add(s);
             }
         }
-        return bookedSeats;
+        return result;
     }
-    
-    public Seat getSeatByLabel(String seatLabel) {
-        List<Seat> seats = repo.getSeats();
 
-        for (Seat seat : seats) {
-            if (seat.getSeatLabel().equalsIgnoreCase(seatLabel)) {
-                return seat;
+    public Seat getSeatByLabel(String label) {
+        for (Seat s : repo.getSeats()) {
+            if (s.getSeatLabel().equalsIgnoreCase(label)) {
+                return s;
             }
         }
         return null;
     }
 
-    public String validateSingleSeatSelection(String seatLabel) {
-        if (seatLabel == null || seatLabel.isEmpty()) {
-            return "Seat number cannot be empty.";
-        }
+    public String validateSingleSeatSelection(String label) {
+        Seat seat = getSeatByLabel(label);
 
-        if (!seatLabel.matches("^[A-J](10|[1-9])$")) {
-            return "Invalid seat format. Please enter a valid seat like A1, B5 or J10.";
-        }
-
-        Seat seat = getSeatByLabel(seatLabel);
-
-        if (seat == null) {
-            return "Seat does not exist.";
-        }
-
-        if (seat.getStatus().equalsIgnoreCase("BOOKED")) {
-            return "Selected seat is already booked.";
-        }
+        if (seat == null) return "Invalid seat.";
+        if (seat.getStatus().equalsIgnoreCase("BOOKED")) return "Seat already booked.";
 
         return "VALID";
     }
 
-    public String validateMultipleSeatSelection(List<String> seatLabels, int ticketCount) {
-        if (seatLabels.size() != ticketCount) {
-            return "Number of selected seats must match ticket count.";
+    public String validateMultipleSeatSelection(List<String> labels, int count) {
+
+        if (labels.size() != count) {
+            return "Seat count mismatch.";
         }
 
-        for (int i = 0; i < seatLabels.size(); i++) {
-            for (int j = i + 1; j < seatLabels.size(); j++) {
-                if (seatLabels.get(i).equalsIgnoreCase(seatLabels.get(j))) {
-                    return "Duplicate seat selection is not allowed.";
-                }
+        Set<String> uniqueSeats = new HashSet<>(labels);
+        if (uniqueSeats.size() != labels.size()) {
+            return "Duplicate seats selected. Please select unique seats.";
+        }
+
+        for (String label : labels) {
+
+            Seat seat = getSeatByLabel(label);
+
+            if (seat == null) {
+                return "Invalid seat: " + label;
             }
-        }
 
-        for (String seatLabel : seatLabels) {
-            String result = validateSingleSeatSelection(seatLabel);
-            if (!result.equals("VALID")) {
-                return "Invalid seat '" + seatLabel + "' : " + result;
+            if (seat.getStatus().equalsIgnoreCase("BOOKED")) {
+                return "Seat already booked: " + label;
             }
         }
 
         return "VALID";
-    }
-
-    public boolean bookSeat(String seatLabel) {
-        Seat seat = getSeatByLabel(seatLabel);
-
-        if (seat != null && seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-            seat.setStatus("BOOKED");
-            return true;
-        }
-        return false;
-    }
-
-    public List<Seat> bookMultipleSeats(List<String> seatLabels) {
-        List<Seat> selectedSeats = new ArrayList<>();
-
-        for (String seatLabel : seatLabels) {
-            Seat seat = getSeatByLabel(seatLabel);
-            if (seat == null || !seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-                return null;
-            }
-        }
-
-        for (String seatLabel : seatLabels) {
-            Seat seat = getSeatByLabel(seatLabel);
-            seat.setStatus("BOOKED");
-            selectedSeats.add(seat);
-        }
-
-        return selectedSeats;
     }
 }
