@@ -5,42 +5,58 @@ import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl
 
 import java.util.*;
 
+// Service class to handle movie search operations
 public class SearchService {
 
-	public List<Movie> searchByTitle(String title) {
+    // Method to search movies by title (partial match)
+    public List<Movie> searchByTitle(String title) {
 
-		List<Movie> result = new ArrayList<>();
+        // List to store matching results
+        List<Movie> result = new ArrayList<>();
 
-		for (Movie m : BookingRepositoryImpl.movies) {
-			if (m.getTitle().toLowerCase().contains(title.toLowerCase())) {
-				result.add(m);
-			}
-		}
-		return result;
-	}
+        // Get movie list from repository (fixed: using getter)
+        for (Movie m : BookingRepositoryImpl.getMovies()) {
 
-	public List<Movie> searchByLanguage(String language) {
+            // Check if movie title contains input (case-insensitive)
+            if (m.getTitle().toLowerCase().contains(title.toLowerCase())) {
+                result.add(m);
+            }
+        }
+        return result;
+    }
 
-		List<Movie> result = new ArrayList<>();
+    // Method to search movies by language (exact match, case-insensitive)
+    public List<Movie> searchByLanguage(String language) {
 
-		for (Movie m : BookingRepositoryImpl.movies) {
-			if (m.getLanguage().equalsIgnoreCase(language)) {
-				result.add(m);
-			}
-		}
-		return result;
-	}
+        // List to store matching results
+        List<Movie> result = new ArrayList<>();
 
-	public void displayMovies(List<Movie> list) {
+        // Get movie list from repository (fixed: using getter)
+        for (Movie m : BookingRepositoryImpl.getMovies()) {
 
-		if (list.isEmpty()) {
-			System.out.println("No movies found.");
-			return;
-		}
+            // Check if language matches
+            if (m.getLanguage().equalsIgnoreCase(language)) {
+                result.add(m);
+            }
+        }
+        return result;
+    }
 
-		for (int i = 0; i < list.size(); i++) {
-			Movie m = list.get(i);
-			System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ")");
-		}
-	}
+    // Method to display list of movies
+    public void displayMovies(List<Movie> list) {
+
+        // Check if list is empty
+        if (list.isEmpty()) {
+            System.out.println("No movies found.");
+            return;
+        }
+
+        // Display movies with numbering
+        for (int i = 0; i < list.size(); i++) {
+            Movie m = list.get(i);
+
+            // Using getters to display details
+            System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ")");
+        }
+    }
 }
