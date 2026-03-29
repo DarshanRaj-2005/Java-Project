@@ -7,33 +7,49 @@ import org.expleo.TicketBookingJavaProject.service.SearchService;
 
 public class SearchController {
 
-	private Scanner sc = new Scanner(System.in);
-	private SearchService service = new SearchService();
+    private Scanner sc = new Scanner(System.in);
 
-	public void searchMovie() {
+    // Service layer object to handle business logic
+    private SearchService service = new SearchService();
 
-		System.out.println("1. Search by Title");
-		System.out.println("2. Search by Language");
+    // Method to handle movie search options
+    public void searchMovie() {
 
-		int choice = sc.nextInt();
-		sc.nextLine();
+        // Display search options to user
+        System.out.println("1. Search by Title");
+        System.out.println("2. Search by Language");
 
-		if (choice == 1) {
-			System.out.println("Enter title:");
-			String title = sc.nextLine();
+        // Take user choice
+        int choice = sc.nextInt();
+        sc.nextLine(); // consume newline
 
-			List<Movie> result = service.searchByTitle(title);
-			service.displayMovies(result);
+        // If user chooses search by title
+        if (choice == 1) {
+            System.out.println("Enter title:");
+            String title = sc.nextLine(); // get title input
 
-		} else if (choice == 2) {
-			System.out.println("Enter language:");
-			String lang = sc.nextLine();
+            // Call service method to search movies by title
+            List<Movie> result = service.searchByTitle(title);
 
-			List<Movie> result = service.searchByLanguage(lang);
-			service.displayMovies(result);
+            // Display the search results
+            service.displayMovies(result);
 
-		} else {
-			System.out.println("Invalid choice");
-		}
-	}
+        } 
+        // If user chooses search by language
+        else if (choice == 2) {
+            System.out.println("Enter language:");
+            String lang = sc.nextLine(); // get language input
+
+            // Call service method to search movies by language
+            List<Movie> result = service.searchByLanguage(lang);
+
+            // Display the search results
+            service.displayMovies(result);
+
+        } 
+        // If user enters invalid choice
+        else {
+            System.out.println("Invalid choice");
+        }
+    }
 }
