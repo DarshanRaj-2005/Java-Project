@@ -109,8 +109,8 @@ public class BookingController {
 
         // Step 8: Create Booking object
         Booking booking = new Booking();
-        // ⚠️ Your model uses int → convert safely
-        booking.setBookingId(Integer.parseInt(bookingId)); 
+        
+        booking.setBookingId(bookingId);
         booking.setTotalAmount(amount);
         booking.setStatus("CONFIRMED");
 

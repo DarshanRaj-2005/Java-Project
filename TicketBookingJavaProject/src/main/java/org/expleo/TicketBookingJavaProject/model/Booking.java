@@ -7,7 +7,7 @@ package org.expleo.TicketBookingJavaProject.model;
 public class Booking {
 
     // Unique identifier for booking
-    private int bookingId;
+	private String bookingId;
     
     // Total amount for the booking
     private double totalAmount;
@@ -16,12 +16,12 @@ public class Booking {
     private String status;
 
     // Getter methods
-    public int getBookingId() { return bookingId; }
+    public String getBookingId() { return bookingId; }
     public double getTotalAmount() { return totalAmount; }
     public String getStatus() { return status; }
 
     // Setter methods
-    public void setBookingId(int bookingId) { this.bookingId = bookingId; }
+    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
     public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
     public void setStatus(String status) { this.status = status; }
 }
