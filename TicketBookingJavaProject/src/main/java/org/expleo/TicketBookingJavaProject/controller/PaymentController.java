@@ -3,6 +3,12 @@ package org.expleo.TicketBookingJavaProject.controller;
 import org.expleo.TicketBookingJavaProject.model.Payment;
 import org.expleo.TicketBookingJavaProject.service.PaymentService;
 
+
+public class PaymentController {
+
+    PaymentService service = new PaymentService();
+
+
 /*
  * Controller acts as bridge between UI and Service layer
  * Handles payment-related requests
@@ -22,6 +28,10 @@ public class PaymentController {
         return service.processPayment(amount, method);
     }
 
+    public boolean checkPayment(Payment payment) {
+        return service.validatePayment(payment);
+    }
+}
     /*
      * Validates payment status
      * @param payment Payment to validate

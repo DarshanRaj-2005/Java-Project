@@ -2,85 +2,41 @@ package org.expleo.TicketBookingJavaProject.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.expleo.TicketBookingJavaProject.model.City;
 import org.expleo.TicketBookingJavaProject.model.Movie;
 import org.expleo.TicketBookingJavaProject.model.Showtime;
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 
-// Service class to handle selection and filtering logic
+/**
+ * Service class for selection operations.
+ * Note: Selection operations are handled in BookingController.
+ * This service is kept for backward compatibility.
+ */
 public class SelectionService {
 
-    // ==================== GET METHODS ====================
-
-    // Get all cities
+    /**
+     * Gets all cities.
+     * Note: Use TheatreRepositoryImpl.getAllCities() instead.
+     */
     public List<City> getCities() {
         return BookingRepositoryImpl.getCities();
     }
 
-    // Get theatres based on selected city
+    /**
+     * Gets theatres in a city.
+     * Note: Use TheatreRepositoryImpl.getTheatresByCity() instead.
+     */
     public List<Theatre> getTheatresByCity(City city) {
         List<Theatre> result = new ArrayList<>();
-
-        for (Theatre t : BookingRepositoryImpl.getTheatres()) {
-            // Assuming each theatre belongs to a city (future upgrade)
-            // For now, return all (you can link later)
-            result.add(t);
-        }
-
-        return result;
-    }
-
-    // Get movies available in a selected theatre
-    public List<Movie> getMoviesByTheatre(Theatre theatre) {
-        // Using theatre object directly (better design)
-        return theatre.getMovies();
-    }
-
-    // Get showtimes based on movie and theatre
-    public List<Showtime> getShowtimes(Movie movie, Theatre theatre) {
-        List<Showtime> result = new ArrayList<>();
-
-        for (Showtime s : BookingRepositoryImpl.getShowtimes()) {
-            // Filter based on movie and theatre
-            if (s.getMovie().getId() == movie.getId() &&
-                s.getTheatre().getId() == theatre.getId()) {
-
-                result.add(s);
+        List<Theatre> allTheatres = TheatreRepositoryImpl.getAllTheatres();
+        
+        for (Theatre t : allTheatres) {
+            if (t.getCity().equals(city.getName())) {
+                result.add(t);
             }
         }
-
         return result;
-    }
-
-    // ==================== DISPLAY METHODS ====================
-
-    // Display cities
-    public void displayCities(List<City> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
-        }
-    }
-
-    // Display theatres
-    public void displayTheatres(List<Theatre> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
-        }
-    }
-
-    // Display movies
-    public void displayMovies(List<Movie> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
-        }
-    }
-
-    // Display showtimes
-    public void displayShowtimes(List<Showtime> list) {
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println((i + 1) + ". " + list.get(i));
-        }
     }
 }

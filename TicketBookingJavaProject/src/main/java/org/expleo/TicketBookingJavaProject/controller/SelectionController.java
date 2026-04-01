@@ -1,69 +1,85 @@
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.*;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
+/**
+ * Controller for selection operations.
+ * Handles city and theatre selection from database.
+ * Note: This class provides alternative selection methods using database.
+ */
 public class SelectionController {
 
-    // Scanner object to take user input from console
+    // Scanner for user input
     private Scanner sc = new Scanner(System.in);
 
-    // Method to display list of cities and return selected city
+    /**
+     * Selects a city from available cities in database.
+     * @return Selected city name or null if invalid
+     */
     public String selectCity() {
+        // Get cities from database
+        List<String> cities = TheatreRepositoryImpl.getAllCities();
+        
+        if (cities.isEmpty()) {
+            System.out.println("No cities available.");
+            return null;
+        }
 
-        // List of available cities
-        List<String> cities = Arrays.asList("Chennai", "Salem", "Coimbatore");
-
-        // Display city options
-        System.out.println("\nSelect City:");
+        System.out.println("\n--- SELECT CITY ---");
         for (int i = 0; i < cities.size(); i++) {
             System.out.println((i + 1) + ". " + cities.get(i));
         }
 
-        // Get user choice
-        int choice = sc.nextInt();
-        sc.nextLine(); // consume leftover newline
+        System.out.print("Enter choice: ");
+        int choice = InputUtil.getIntInput(sc);
 
-        // Return selected city (index adjusted by -1)
-        return cities.get(choice - 1);
+        if (choice >= 1 && choice <= cities.size()) {
+            return cities.get(choice - 1);
+        }
+        return null;
     }
 
-    // Method to display list of theatres and return selected theatre
+    /**
+     * Selects a theatre from available theatres.
+     * @return Selected theatre name or null if invalid
+     */
     public String selectTheatre() {
-
-        // List of available theatres
         List<String> theatres = Arrays.asList("PVR", "INOX", "AGS");
 
-        // Display theatre options
-        System.out.println("\nSelect Theatre:");
+        System.out.println("\n--- SELECT THEATRE ---");
         for (int i = 0; i < theatres.size(); i++) {
             System.out.println((i + 1) + ". " + theatres.get(i));
         }
 
-        // Get user choice
-        int choice = sc.nextInt();
-        sc.nextLine(); // consume leftover newline
+        System.out.print("Enter choice: ");
+        int choice = InputUtil.getIntInput(sc);
 
-        // Return selected theatre
-        return theatres.get(choice - 1);
+        if (choice >= 1 && choice <= theatres.size()) {
+            return theatres.get(choice - 1);
+        }
+        return null;
     }
 
-    // Method to display available show timings and return selected time
+    /**
+     * Selects a showtime.
+     * @return Selected showtime or null if invalid
+     */
     public String selectShowTime() {
+        List<String> shows = Arrays.asList("10:00 AM", "01:30 PM", "06:00 PM", "10:00 PM");
 
-        // List of show timings
-        List<String> shows = Arrays.asList("10 AM", "2 PM", "6 PM", "10 PM");
-
-        // Display show time options
-        System.out.println("\nSelect Show Time:");
+        System.out.println("\n--- SELECT SHOWTIME ---");
         for (int i = 0; i < shows.size(); i++) {
             System.out.println((i + 1) + ". " + shows.get(i));
         }
 
-        // Get user choice
-        int choice = sc.nextInt();
-        sc.nextLine(); // consume leftover newline
+        System.out.print("Enter choice: ");
+        int choice = InputUtil.getIntInput(sc);
 
-        // Return selected show time
-        return shows.get(choice - 1);
+        if (choice >= 1 && choice <= shows.size()) {
+            return shows.get(choice - 1);
+        }
+        return null;
     }
 }
