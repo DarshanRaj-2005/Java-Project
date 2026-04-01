@@ -7,35 +7,39 @@ package org.expleo.TicketBookingJavaProject.model;
  */
 public class PaymentResponse {
 
-    // Unique transaction ID generated during payment
-    private String transactionId;
+	// Unique transaction ID generated during payment
+	private String transactionId;
 
-    // Status of the payment (SUCCESS or FAILED)
-    private String status; 
+	// Status of the payment (SUCCESS or FAILED)
+	private String status;
 
-    /*
-     * Constructor to initialize payment response
-     * @param transactionId Unique transaction identifier
-     * @param status Payment status
-     */
-    public PaymentResponse(String transactionId, String status) {
-        this.transactionId = transactionId;
-        this.status = status;
-    }
+	/*
+	 * Constructor to initialize payment response
+	 * 
+	 * @param transactionId Unique transaction identifier
+	 * 
+	 * @param status Payment status
+	 */
+	public PaymentResponse(String transactionId, String status) {
+		this.transactionId = transactionId;
+		this.status = status;
+	}
 
-    /*
-     * Getter for transaction ID
-     * @return transactionId
-     */
-    public String getTransactionId() {
-        return transactionId;
-    }
+	/*
+	 * Getter for transaction ID
+	 * 
+	 * @return transactionId
+	 */
+	public String getTransactionId() {
+		return transactionId;
+	}
 
-    /*
-     * Getter for payment status
-     * @return status (SUCCESS / FAILED)
-     */
-    public String getStatus() {
-        return status;
-    }
+	/*
+	 * Getter for payment status
+	 * 
+	 * @return status (SUCCESS / FAILED)
+	 */
+	public String getStatus() {
+		return status;
+	}
 }

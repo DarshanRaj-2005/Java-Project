@@ -1,34 +1,104 @@
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.expleo.TicketBookingJavaProject.model.Seat;
+import org.expleo.TicketBookingJavaProject.config.DBConnection;
 
-/*
- * Repository class simulating database for seats
- * Stores and manages seat availability in theatre format (A1, B2, etc.)
+/**
+ * Repository implementation for Seat database operations. Handles seat layout
+ * and status management.
  */
 public class SeatRepositoryImpl {
 
-    // Static list to act as in-memory database
-    private static List<Seat> seats = new ArrayList<>();
+	/**
+	 * Gets all seats for a session. If no seats exist, creates a 10x10 seat layout.
+	 * 
+	 * @param sessionKey Session identifier (format: theatre_movie_showtime)
+	 * @return List of seats
+	 */
+	public List<Seat> getSeatsForSession(String sessionKey) {
+		List<Seat> seats = new ArrayList<>();
+		String query = "SELECT * FROM seats WHERE session_key = ?";
 
-    // Static block to initialize seats
-    static {
-        int seatId = 1;
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
-        // Create seats from row A to J and numbers 1 to 10
-        for (char r = 'A'; r <= 'J'; r++) {
-            for (int i = 1; i <= 10; i++) {
+			stmt.setString(1, sessionKey);
+			ResultSet rs = stmt.executeQuery();
 
-                // Create seat using correct constructor
-                seats.add(new Seat(seatId++, String.valueOf(r), i, "AVAILABLE"));
-            }
-        }
-    }
+			// Fetch existing seats
+			while (rs.next()) {
+				seats.add(new Seat(rs.getInt("seat_id"), rs.getString("row_char"), rs.getInt("seat_number"),
+						rs.getString("status"), rs.getDouble("price")));
+			}
 
-    // Get all seats
-    public static List<Seat> getSeats() {
-        return seats;
-    }
+			// If no seats exist, create layout
+			if (seats.isEmpty()) {
+				createSeatLayout(sessionKey);
+				// Fetch created seats
+				rs = stmt.executeQuery();
+				while (rs.next()) {
+					seats.add(new Seat(rs.getInt("seat_id"), rs.getString("row_char"), rs.getInt("seat_number"),
+							rs.getString("status"), rs.getDouble("price")));
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching seats: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return seats;
+	}
+
+	/**
+	 * Creates a 10x10 seat layout for a session.
+	 * 
+	 * @param sessionKey Session identifier
+	 */
+	private void createSeatLayout(String sessionKey) {
+		String insertQuery = "INSERT INTO seats (session_key, row_char, seat_number, status, price) VALUES (?, ?, ?, ?, ?)";
+
+		try (Connection conn = DBConnection.getConnection();
+				PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+
+			double defaultPrice = 200.0;
+
+			// Create 10 rows (A-J) with 10 seats each
+			for (char row = 'A'; row <= 'J'; row++) {
+				for (int num = 1; num <= 10; num++) {
+					insertStmt.setString(1, sessionKey);
+					insertStmt.setString(2, String.valueOf(row));
+					insertStmt.setInt(3, num);
+					insertStmt.setString(4, "AVAILABLE");
+					insertStmt.setDouble(5, defaultPrice);
+					insertStmt.executeUpdate();
+				}
+			}
+			System.out.println("Seat layout created for this session.");
+		} catch (SQLException e) {
+			System.out.println("Error creating seat layout: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Updates seat information in the database.
+	 * 
+	 * @param seat Seat object with updated information
+	 */
+	public void updateSeat(Seat seat) {
+		String query = "UPDATE seats SET status = ?, price = ? WHERE seat_id = ?";
+
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+
+			stmt.setString(1, seat.getStatus());
+			stmt.setDouble(2, seat.getPrice());
+			stmt.setInt(3, seat.getSeatId());
+
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("Error updating seat: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
 }

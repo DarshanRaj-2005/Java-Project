@@ -1,212 +1,459 @@
 package org.expleo.TicketBookingJavaProject.controller;
 
-import org.expleo.TicketBookingJavaProject.model.Seat;
-import org.expleo.TicketBookingJavaProject.model.Booking;
-import org.expleo.TicketBookingJavaProject.model.Payment;
-<<<<<<< HEAD
-import org.expleo.TicketBookingJavaProject.service.BookingService;
-
 import java.util.*;
-
-public class BookingController {
-
-    private BookingService service = new BookingService();
-    private SeatController seatController = new SeatController();
-
-    // 🎟️ Step 1: Check ticket availability
-    public void checkTicketAvailability(int ticketCount) {
-
-        boolean isAvailable = service.validateTicketCount(ticketCount);
-
-        if (!isAvailable) {
-            System.out.println("Requested ticket count is invalid or not enough seats are available.");
-            return;
-        }
-
-        System.out.println("Tickets available. Proceed to seat selection.");
-=======
-import org.expleo.TicketBookingJavaProject.model.PaymentResponse;
+import org.expleo.TicketBookingJavaProject.model.*;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.service.SeatService;
 import org.expleo.TicketBookingJavaProject.service.BookingService;
-import org.expleo.TicketBookingJavaProject.util.PaymentUtil;
-import org.expleo.TicketBookingJavaProject.util.BookingIdGenerator;
+import org.expleo.TicketBookingJavaProject.service.PaymentService;
+import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-import java.util.*;
-
-/*
- * BookingController
- * Handles seat selection, payment, and booking confirmation
+/**
+ * Controller for booking operations. Handles the complete booking flow from
+ * movie selection to payment.
  */
 public class BookingController {
 
-    // Service layer
-    private BookingService service = new BookingService();
+	// Scanner for user input
+	private Scanner sc = new Scanner(System.in);
 
-    // Seat selection controller
-    private SeatController seatController = new SeatController();
+	// Reference to SearchController (for pre-selected movie)
+	private SearchController searchController;
 
-    // Single Scanner instance
-    private Scanner sc = new Scanner(System.in);
+	// Reference to MovieController
+	private MovieController movieController;
 
-    /*
-     * Validate ticket count
-     */
-    public boolean validateTickets(int count) {
-        return service.validateTicketCount(count);
-    }
+	// Services for seat and booking operations
+	private SeatService seatService = new SeatService();
+	private BookingService bookingService = new BookingService();
+	private PaymentService paymentService = new PaymentService();
 
-    /*
-     * Main booking flow
-     */
-    public void startBooking(int ticketCount) {
+	public BookingController(SearchController searchController, MovieController movieController) {
+		this.searchController = searchController;
+		this.movieController = movieController;
+	}
 
-        // Step 1: Validate ticket count
-        if (!validateTickets(ticketCount)) {
-            System.out.println("Invalid ticket count or insufficient seats.");
-            return;
-        }
+	/**
+	 * Starts the booking flow.
+	 * 
+	 * @param ticketCount Number of tickets to book (-1 if not specified)
+	 */
+	public void startBooking(int ticketCount) {
+		System.out.println("\n--- BOOKING FLOW ---");
 
-        // Step 2: Show seats
-        seatController.showSeatSelectionPage();
+		Movie preSelected = searchController.getSelectedMovie();
+		Theatre theatre = null;
+		Movie movie = null;
+		String city = null;
 
-        List<Seat> selectedSeats = new ArrayList<>();
+		if (preSelected != null) {
+			// Movie was pre-selected through search
+			System.out.println("Using previously selected movie: " + preSelected.getTitle() + " ("
+					+ preSelected.getLanguage() + ")");
 
-        // 🎯 Single seat selection
-        if (ticketCount == 1) {
+			// Step 1: Select City (get cities where this movie is available)
+			city = selectCityForMovie(preSelected);
+			if (city == null) {
+				searchController.clearSelectedMovie();
+				return;
+			}
 
-            Seat selectedSeat = null;
+			// Step 2: Select Theatre in that city
+			theatre = selectTheatreForMovie(preSelected, city);
+			if (theatre == null) {
+				searchController.clearSelectedMovie();
+				return;
+			}
 
-            while (selectedSeat == null) {
-                selectedSeat = seatController.selectSingleSeat();
-            }
+			// Get the movie object from this theatre
+			movie = movieController.getMoviesForTheatre(theatre.getId()).stream()
+					.filter(m -> m.getTitle().equalsIgnoreCase(preSelected.getTitle())
+							&& m.getLanguage().equalsIgnoreCase(preSelected.getLanguage()))
+					.findFirst().orElse(null);
 
-            selectedSeats.add(selectedSeat);
+			if (movie == null) {
+				System.out.println("Error: Movie not found in selected theatre!");
+				searchController.clearSelectedMovie();
+				return;
+			}
 
-        } else {
+		} else {
+			// Normal flow - no pre-selected movie
+			// Step 1: Select City
+			city = selectCity();
+			if (city == null)
+				return;
 
-            // 🎯 Multiple seat selection
-            while (selectedSeats.isEmpty()) {
+			// Step 2: Select Theatre in that city
+			theatre = selectTheatre(city);
+			if (theatre == null)
+				return;
 
-                List<Seat> seats = seatController.selectMultipleSeats(ticketCount);
+			// Step 3: Select Movie
+			movie = selectMovie(theatre.getId());
+			if (movie == null)
+				return;
+		}
 
-                if (seats != null) {
-                    selectedSeats = seats;
-                }
-            }
-        }
+		// Step 4: Select Showtime
+		String showtime = selectShowtime();
+		if (showtime == null)
+			return;
 
-        confirmSeatBooking(ticketCount, selectedSeats);
-    }
+		// Step 5: Book Seats
+		bookSeats(movie, theatre, city, showtime, ticketCount);
 
-    // 🎟️ Step 2: Confirm selected seats
-    public void confirmSeatBooking(int ticketCount, List<Seat> selectedSeats) {
+		// Clear selected movie after booking
+		searchController.clearSelectedMovie();
+	}
 
-        System.out.println("\n========== BOOKING DETAILS ==========");
-        System.out.println("Ticket Count : " + ticketCount);
+	/**
+	 * Selects city when a movie is pre-selected. Only shows cities where the movie
+	 * is available.
+	 */
+	private String selectCityForMovie(Movie movie) {
+		// Get all theatres showing this movie
+		List<Theatre> theatresWithMovie = searchController.getTheatresForSelectedMovie(null);
 
-        System.out.print("Selected Seats : ");
-        for (Seat seat : selectedSeats) {
-            System.out.print(seat.getSeatLabel() + " ");
-        }
-        System.out.println();
+		if (theatresWithMovie.isEmpty()) {
+			System.out.println("Error: This movie is not available in any theatre.");
+			return null;
+		}
 
-        System.out.println("Message : Booking confirmed successfully.");
-    }
-    public void confirmBooking(Booking booking, Payment payment) {
-        service.confirmBooking(booking, payment);
-    }
-=======
-        // Step 3: Seat selection
-        if (ticketCount == 1) {
-            while (selectedSeats.isEmpty()) {
-                Seat s = seatController.selectSingleSeat();
-                if (s != null) selectedSeats.add(s);
-            }
-        } else {
-            while (selectedSeats.isEmpty()) {
-                List<Seat> s = seatController.selectMultipleSeats(ticketCount);
-                if (s != null) selectedSeats = s;
-            }
-        }
+		// Get unique cities
+		Set<String> citiesSet = new HashSet<>();
+		for (Theatre t : theatresWithMovie) {
+			citiesSet.add(t.getCity());
+		}
 
-        // Step 4: Process booking
-        processBooking(ticketCount, selectedSeats);
-    }
+		List<String> cities = new ArrayList<>(citiesSet);
+		Collections.sort(cities);
 
-    /*
-     * Booking + Payment Process
-     */
-    private void processBooking(int ticketCount, List<Seat> seats) {
+		System.out.println("\n--- SELECT CITY ---");
+		System.out.println("Available cities where '" + movie.getTitle() + "' is playing:");
 
-        // Display selected seats
-        System.out.println("\nSelected Seats:");
-        for (Seat s : seats) {
-            System.out.print(s.getSeatLabel() + " ");
-        }
+		for (int i = 0; i < cities.size(); i++) {
+			System.out.println((i + 1) + ". " + cities.get(i));
+		}
 
-        // Calculate amount
-        double amount = ticketCount * 150;
-        System.out.println("\nAmount: Rs." + amount);
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
 
-        // Confirm booking
-        System.out.print("Confirm Booking? (yes/no): ");
-        String confirm = sc.nextLine();
+		if (choice < 1 || choice > cities.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
 
-        if (!confirm.equalsIgnoreCase("yes")) {
-            System.out.println("Booking Cancelled.");
-            return;
-        }
+		return cities.get(choice - 1);
+	}
 
-        // Step 5: Payment processing
-        PaymentResponse response = PaymentUtil.processPayment(amount);
+	/**
+	 * Selects theatre for a pre-selected movie in a specific city.
+	 */
+	private Theatre selectTheatreForMovie(Movie movie, String city) {
+		List<Theatre> theatres = searchController.getTheatresForSelectedMovie(city);
 
-        System.out.println("Txn ID: " + response.getTransactionId());
-        System.out.println("Status: " + response.getStatus());
+		if (theatres.isEmpty()) {
+			System.out.println("No theatres found in " + city + " for this movie.");
+			return null;
+		}
 
-        // If payment fails
-        if (!response.getStatus().equalsIgnoreCase("SUCCESS")) {
-            System.out.println("Payment Failed.");
-            return;
-        }
+		System.out.println("\n--- SELECT THEATRE in " + city + " ---");
+		System.out.println("Theatres showing '" + movie.getTitle() + "':");
 
-        // Step 6: Confirm seats (mark BOOKED)
-        seatController.confirmSeats(seats);
+		for (int i = 0; i < theatres.size(); i++) {
+			Theatre t = theatres.get(i);
+			System.out.println((i + 1) + ". " + t.getName());
+		}
 
-        // Step 7: Generate Booking ID
-        String bookingId = BookingIdGenerator.generateBookingId();
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
 
-        // Step 8: Create Booking object
-        Booking booking = new Booking();
-        
-        booking.setBookingId(bookingId);
-        booking.setTotalAmount(amount);
-        booking.setStatus("CONFIRMED");
+		if (choice < 1 || choice > theatres.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
 
-        // Step 9: Create Payment object
-        Payment payment = new Payment();
-        payment.setPaymentId(new Random().nextInt(10000)); // simple ID generation
-        payment.setAmount(amount);
-        payment.setMethod("UPI"); // default method
-        payment.setStatus(response.getStatus());
+		return theatres.get(choice - 1);
+	}
 
-        // Step 10: Confirm booking in service layer
-        confirmBooking(booking, payment);
+	/**
+	 * Selects city from all available cities.
+	 */
+	private String selectCity() {
+		// Get cities from database
+		List<String> cities = TheatreRepositoryImpl.getAllCities();
 
-        // Final Output
-        System.out.println("\nBooking Confirmed!");
-        System.out.println("Booking ID: " + booking.getBookingId());
-    }
+		if (cities.isEmpty()) {
+			System.out.println("No cities available. Please contact Super Admin to add theatres.");
+			return null;
+		}
 
-    /*
-     * Final confirmation
-     */
-    public void confirmBooking(Booking booking, Payment payment) {
-        service.confirmBooking(booking, payment);
-    }
+		System.out.println("\n--- SELECT CITY ---");
+		for (int i = 0; i < cities.size(); i++) {
+			System.out.println((i + 1) + ". " + cities.get(i));
+		}
 
-    /*
-     * Optional direct booking
-     */
-    public void bookSeats(int count) {
-        service.bookSeats(count);
-    }
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
+
+		if (choice < 1 || choice > cities.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
+
+		return cities.get(choice - 1);
+	}
+
+	/**
+	 * Selects theatre in a given city.
+	 */
+	private Theatre selectTheatre(String city) {
+		List<Theatre> theatres = TheatreRepositoryImpl.getTheatresByCity(city);
+
+		if (theatres.isEmpty()) {
+			System.out.println("No theatres available in " + city + ".");
+			System.out.println("Please contact Super Admin to add theatres.");
+			return null;
+		}
+
+		System.out.println("\n--- SELECT THEATRE in " + city + " ---");
+		for (int i = 0; i < theatres.size(); i++) {
+			System.out.println((i + 1) + ". " + theatres.get(i).getName());
+		}
+
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
+
+		if (choice < 1 || choice > theatres.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
+
+		return theatres.get(choice - 1);
+	}
+
+	/**
+	 * Selects movie from a theatre.
+	 */
+	private Movie selectMovie(int theatreId) {
+		List<Movie> movies = movieController.getMoviesForTheatre(theatreId);
+
+		if (movies.isEmpty()) {
+			System.out.println("No movies available in this theatre.");
+			return null;
+		}
+
+		System.out.println("\n--- SELECT MOVIE ---");
+		for (int i = 0; i < movies.size(); i++) {
+			Movie m = movies.get(i);
+			System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ") | " + m.getGenre() + " | "
+					+ m.getDuration() + " mins");
+		}
+
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
+
+		if (choice < 1 || choice > movies.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
+
+		return movies.get(choice - 1);
+	}
+
+	/**
+	 * Selects showtime for the movie.
+	 */
+	private String selectShowtime() {
+		List<String> shows = Arrays.asList("10:00 AM", "01:30 PM", "06:00 PM", "10:00 PM");
+
+		System.out.println("\n--- SELECT SHOWTIME ---");
+		for (int i = 0; i < shows.size(); i++) {
+			System.out.println((i + 1) + ". " + shows.get(i));
+		}
+
+		System.out.print("Choice: ");
+		int choice = InputUtil.getIntInput(sc);
+
+		if (choice < 1 || choice > shows.size()) {
+			System.out.println("Invalid selection!");
+			return null;
+		}
+
+		return shows.get(choice - 1);
+	}
+
+	/**
+	 * Handles seat selection and booking process.
+	 */
+	private void bookSeats(Movie movie, Theatre theatre, String city, String showtime, int ticketCount) {
+		String sessionKey = theatre.getId() + "_" + movie.getId() + "_" + showtime.replace(" ", "_").replace(":", "");
+
+		// Get number of tickets
+		if (ticketCount <= 0) {
+			System.out.print("\nEnter number of tickets to book: ");
+			ticketCount = InputUtil.getIntInput(sc);
+
+			if (ticketCount <= 0) {
+				System.out.println("Error: Please enter a valid number of tickets!");
+				return;
+			}
+		}
+
+		// Display seat layout
+		displaySeatLayout(sessionKey);
+
+		// Get seat selection from user
+		List<String> selectedSeats = new ArrayList<>();
+
+		System.out.println("Enter " + ticketCount + " seat labels to book (comma-separated, e.g., A1, A2): ");
+		String input = sc.nextLine().toUpperCase();
+
+		// Parse seat labels (comma or space separated)
+		String[] labels = input.split("[,\\s]+");
+		for (String label : labels) {
+			if (!label.trim().isEmpty()) {
+				selectedSeats.add(label.trim());
+			}
+		}
+
+		// Validate seat count
+		if (selectedSeats.size() != ticketCount) {
+			System.out.println("Error: You must select exactly " + ticketCount + " seats!");
+			return;
+		}
+
+		if (selectedSeats.isEmpty()) {
+			System.out.println("Error: No seats selected!");
+			return;
+		}
+
+		// Validate seat selection
+		String validation = seatService.validateMultipleSeatSelection(sessionKey, selectedSeats, ticketCount);
+		if (!validation.equals("VALID")) {
+			System.out.println("Error: " + validation);
+			return;
+		}
+
+		// Calculate total price
+		double seatPrice = 200.0;
+		double totalAmount = ticketCount * seatPrice;
+
+		// Show booking summary
+		System.out.println("\n--- BOOKING SUMMARY ---");
+		System.out.println("Movie: " + movie.getTitle() + " (" + movie.getLanguage() + ")");
+		System.out.println("Theatre: " + theatre.getName() + " (" + city + ")");
+		System.out.println("Showtime: " + showtime);
+		System.out.println("Seats: " + String.join(", ", selectedSeats));
+		System.out.println("Total Amount to Pay: Rs. " + totalAmount);
+
+		// Proceed to payment
+		System.out.print("\nProceed to Payment? (yes/no): ");
+		if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
+			System.out.println("Booking cancelled.");
+			return;
+		}
+
+		// Process payment
+		processPayment(movie, theatre, city, showtime, selectedSeats, totalAmount);
+	}
+
+	/**
+	 * Processes payment for the booking.
+	 */
+	private void processPayment(Movie movie, Theatre theatre, String city, String showtime, List<String> selectedSeats,
+			double totalAmount) {
+		System.out.print("Enter Payment Method (Card/UPI/Cash): ");
+		String method = sc.nextLine().trim();
+
+		try {
+			if (method.equalsIgnoreCase("Card")) {
+				System.out.print("Enter Card Number (16 digits): ");
+				String cardNumber = sc.nextLine().trim();
+				System.out.print("Enter CVV (3 digits): ");
+				String cvv = sc.nextLine().trim();
+				paymentService.validateCardPayment(cardNumber, cvv);
+
+			} else if (method.equalsIgnoreCase("UPI")) {
+				System.out.print("Enter UPI ID (e.g., user@bank): ");
+				String upiId = sc.nextLine().trim();
+				paymentService.validateUpiPayment(upiId);
+
+			} else if (!method.equalsIgnoreCase("Cash")) {
+				System.out.println("Error: Invalid payment method selected.");
+				return;
+			}
+		} catch (org.expleo.TicketBookingJavaProject.exception.PaymentErrorException e) {
+			System.out.println("Payment Failed: " + e.getMessage());
+			return;
+		}
+
+		System.out.println("Payment Successful via " + method + "!");
+
+		// Create booking
+		String bookingId = bookingService.generateBookingId();
+		Booking booking = new Booking(bookingId, movie.getId(), theatre.getId(), showtime, selectedSeats, totalAmount,
+				"CONFIRMED");
+		bookingService.confirmBooking(booking);
+
+		// Update seat status
+		String sessionKey = theatre.getId() + "_" + movie.getId() + "_" + showtime.replace(" ", "_").replace(":", "");
+		for (String label : selectedSeats) {
+			Seat s = seatService.getSeatByLabel(sessionKey, label);
+			if (s != null) {
+				s.setStatus("BOOKED");
+				seatService.updateSeat(s);
+			}
+		}
+
+		// Display confirmation
+		System.out.println("\n=================================");
+		System.out.println("       BOOKING CONFIRMED!        ");
+		System.out.println("=================================");
+		System.out.println("Booking ID: " + bookingId);
+		System.out.println("Movie: " + movie.getTitle() + " (" + movie.getLanguage() + ")");
+		System.out.println("Theatre: " + theatre.getName() + " (" + city + ")");
+		System.out.println("Showtime: " + showtime);
+		System.out.println("Seats: " + String.join(", ", selectedSeats));
+		System.out.println("Total Amount PAID: Rs. " + totalAmount);
+		System.out.println("=================================");
+	}
+
+	/**
+	 * Displays the seat layout for a session.
+	 */
+	private void displaySeatLayout(String sessionKey) {
+		System.out.println("\n--- SEAT LAYOUT ---");
+		List<Seat> seats = seatService.getSeatLayout(sessionKey);
+
+		char currentRow = ' ';
+		for (Seat s : seats) {
+			if (s.getRow().charAt(0) != currentRow) {
+				if (currentRow != ' ')
+					System.out.println();
+				currentRow = s.getRow().charAt(0);
+				System.out.print(currentRow + " | ");
+			}
+			String statusSym = s.getStatus().equalsIgnoreCase("AVAILABLE") ? "[ ]" : "[X]";
+			System.out.print(s.getSeatLabel() + statusSym + " ");
+		}
+		System.out.println("\n[ ] = Available  [X] = Booked");
+	}
+
+	/**
+	 * Cancels an existing booking.
+	 */
+	public void cancelBooking() {
+		System.out.println("\n--- CANCEL BOOKING ---");
+		System.out.print("Enter Booking ID: ");
+		String id = sc.nextLine().toUpperCase().trim();
+
+		try {
+			bookingService.cancelBooking(id);
+		} catch (Exception e) {
+			System.out.println("Error: " + e.getMessage());
+		}
+	}
 }
