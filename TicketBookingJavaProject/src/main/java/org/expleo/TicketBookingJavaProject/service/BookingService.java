@@ -1,130 +1,90 @@
 package org.expleo.TicketBookingJavaProject.service;
 
-import java.util.List;
-<<<<<<< HEAD
-
-import org.expleo.TicketBookingJavaProject.model.Booking;
-import org.expleo.TicketBookingJavaProject.model.Payment;
-import org.expleo.TicketBookingJavaProject.model.Seat;
+import java.util.UUID;
+import org.expleo.TicketBookingJavaProject.model.*;
 import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.exception.BookingNotFoundException;
 
-public class BookingService {
-
-	private SeatRepositoryImpl repo = new SeatRepositoryImpl();
-
-	public boolean validateTicketCount(int ticketCount) {
-
-		if (ticketCount <= 0) {
-			return false;
-		}
-
-		List<Seat> seats = repo.getSeats();
-		int availableSeats = 0;
-
-		for (Seat seat : seats) {
-			if (seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-				availableSeats++;
-			}
-		}
-
-		return ticketCount <= availableSeats;
-	}
-	public void confirmBooking(Booking booking, Payment payment) {
-
-	    if (payment.getStatus().equalsIgnoreCase("SUCCESS")) {
-	        booking.setStatus("CONFIRMED");
-	        System.out.println("Booking Confirmed!");
-	    } else {
-	        booking.setStatus("FAILED");
-	        System.out.println("Booking Failed due to payment.");
-	    }
-	}
-}
-=======
-import org.expleo.TicketBookingJavaProject.model.Seat;
-import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.model.Payment;
-import org.expleo.TicketBookingJavaProject.model.Booking;
-
-/*
- * BookingService
- * Handles all booking-related business logic
- * - Validates ticket availability
- * - Confirms booking based on payment
- * - Updates seat status (BOOKED)
+/**
+ * Service class for booking operations.
+ * Handles business logic for ticket bookings.
  */
 public class BookingService {
+    
+    // Repository for seat operations
+    private static SeatRepositoryImpl seatRepo = new SeatRepositoryImpl();
 
-    // Repository instance to access seat data
-    private static SeatRepositoryImpl repo = new SeatRepositoryImpl();
-
-    /*
-     * Validates if requested ticket count is available
-     * @param ticketCount Number of tickets requested
-     * @return true if tickets can be booked
+    /**
+     * Generates a unique booking ID.
+     * @return Random 8-character booking ID
      */
-    public boolean validateTicketCount(int ticketCount) {
+    public String generateBookingId() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
 
-        // Reject invalid ticket count
-        if (ticketCount <= 0) return false;
+    /**
+     * Calculates total price for booking.
+     * @param seatCount Number of seats
+     * @param pricePerSeat Price per seat
+     * @return Total amount
+     */
+    public double calculateTotalPrice(int seatCount, double pricePerSeat) {
+        return seatCount * pricePerSeat;
+    }
 
-        int availableSeats = 0;
+    /**
+     * Confirms a booking by saving it to the database.
+     * @param booking Booking object to confirm
+     */
+    public void confirmBooking(Booking booking) {
+        booking.setStatus("CONFIRMED");
+        BookingRepositoryImpl.addBooking(booking);
+        System.out.println("Booking " + booking.getBookingId() + " confirmed successfully!");
+    }
 
-        // Loop through all seats and count AVAILABLE ones
-        for (Seat seat : repo.getSeats()) {
-            if (seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-                availableSeats++;
+    /**
+     * Cancels a booking and restores seats.
+     * @param bookingId ID of the booking to cancel
+     * @throws BookingNotFoundException if booking not found
+     */
+    public void cancelBooking(String bookingId) {
+        Booking booking = BookingRepositoryImpl.getBookingById(bookingId);
+        
+        if (booking == null) {
+            throw new BookingNotFoundException("Booking with ID " + bookingId + " not found!");
+        }
+
+        // Build session key to restore seats
+        String sessionKey = booking.getTheatreId() + "_" + booking.getMovieId() + "_" + 
+                           booking.getShowtime().replace(" ", "_").replace(":", "");
+
+        // Restore seats to AVAILABLE
+        for (String label : booking.getSeatLabels()) {
+            Seat seat = findSeatByLabel(sessionKey, label);
+            if (seat != null) {
+                seat.setStatus("AVAILABLE");
+                seatRepo.updateSeat(seat);
             }
         }
 
-        // Check if enough seats are available
-        return ticketCount <= availableSeats;
+        // Update booking status to CANCELLED in database
+        BookingRepositoryImpl.deleteBooking(bookingId);
+        System.out.println("Booking " + bookingId + " cancelled and seats restored.");
     }
 
-    /*
-     * Confirms booking after payment
-     * @param booking Booking object
-     * @param payment Payment details
+    /**
+     * Finds a seat by its label in a session.
+     * @param sessionKey Session identifier
+     * @param label Seat label (e.g., "A1")
+     * @return Seat object if found, null otherwise
      */
-    public void confirmBooking(Booking booking, Payment payment) {
-
-        // Check payment status
-        if (payment.getStatus().equalsIgnoreCase("SUCCESS")) {
-
-            // Update booking status
-            booking.setStatus("CONFIRMED");
-            System.out.println("Booking Confirmed!");
-
-        } else {
-
-            // Mark booking as failed
-            booking.setStatus("FAILED");
-            System.out.println("Booking Failed!");
-        }
-    }
-
-    /*
-     * Books seats automatically (first available seats)
-     * @param count Number of seats to book
-     */
-    public void bookSeats(int count) {
-
-        List<Seat> seats = SeatRepositoryImpl.getSeats();
-        int booked = 0;
-
-        // Loop through seats and mark AVAILABLE seats as BOOKED
-        for (Seat seat : seats) {
-
-            if (seat.getStatus().equalsIgnoreCase("AVAILABLE")) {
-                seat.setStatus("BOOKED");
-                booked++;
+    private Seat findSeatByLabel(String sessionKey, String label) {
+        for (Seat s : seatRepo.getSeatsForSession(sessionKey)) {
+            if (s.getSeatLabel().equalsIgnoreCase(label)) {
+                return s;
             }
-
-            // Stop when required seats are booked
-            if (booked == count) break;
         }
-
-        // Display confirmation
-        System.out.println(booked + " Seats Booked Successfully!");
+        return null;
     }
 }

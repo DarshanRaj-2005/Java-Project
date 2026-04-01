@@ -1,66 +1,177 @@
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
-import java.util.List;
+import java.sql.*;
 import java.util.ArrayList;
-import org.expleo.TicketBookingJavaProject.model.*;
+import java.util.Arrays;
+import java.util.List;
+import org.expleo.TicketBookingJavaProject.model.Booking;
+import org.expleo.TicketBookingJavaProject.config.DBConnection;
 
-// Repository class acting as an in-memory database
-// Stores and manages all application data
+/**
+ * Repository implementation for Booking database operations. Handles all CRUD
+ * operations for bookings.
+ */
 public class BookingRepositoryImpl {
 
-    // List to store all cities (private for encapsulation)
-    private static List<City> cities = new ArrayList<>();
+	// Backward compatibility - for legacy models
+	private static List<org.expleo.TicketBookingJavaProject.model.City> cities = new ArrayList<>();
+	private static List<org.expleo.TicketBookingJavaProject.model.Showtime> showtimes = new ArrayList<>();
 
-    // List to store all theatres
-    private static List<Theatre> theatres = new ArrayList<>();
+	// Backward compatibility methods
+	public static List<org.expleo.TicketBookingJavaProject.model.City> getCities() {
+		return cities;
+	}
 
-    // List to store all movies
-    private static List<Movie> movies = new ArrayList<>();
+	public static void addCity(org.expleo.TicketBookingJavaProject.model.City city) {
+		cities.add(city);
+	}
 
-    // List to store all showtimes
-    private static List<Showtime> showtimes = new ArrayList<>();
+	public static List<org.expleo.TicketBookingJavaProject.model.Showtime> getShowtimes() {
+		return showtimes;
+	}
 
-    // ==================== GET METHODS ====================
+	public static void addShowtime(org.expleo.TicketBookingJavaProject.model.Showtime showtime) {
+		showtimes.add(showtime);
+	}
 
-    // Returns list of all cities
-    public static List<City> getCities() {
-        return cities;
-    }
+	// Redirect methods for compatibility
+	public static List<org.expleo.TicketBookingJavaProject.model.Movie> getMovies() {
+		return MovieRepositoryImpl.getAllMovies();
+	}
 
-    // Returns list of all theatres
-    public static List<Theatre> getTheatres() {
-        return theatres;
-    }
+	public static List<org.expleo.TicketBookingJavaProject.model.Theatre> getTheatres() {
+		return TheatreRepositoryImpl.getAllTheatres();
+	}
 
-    // Returns list of all movies
-    public static List<Movie> getMovies() {
-        return movies;
-    }
+	/**
+	 * Retrieves all bookings from the database.
+	 * 
+	 * @return List of all Booking objects
+	 */
+	public static List<Booking> getBookings() {
+		List<Booking> bookings = new ArrayList<>();
+		String query = "SELECT * FROM bookings";
 
-    // Returns list of all showtimes
-    public static List<Showtime> getShowtimes() {
-        return showtimes;
-    }
+		try (Connection conn = DBConnection.getConnection();
+				Statement stmt = conn.createStatement();
+				ResultSet rs = stmt.executeQuery(query)) {
 
-    // ==================== ADD METHODS ====================
+			while (rs.next()) {
+				String seatLabelsStr = rs.getString("seat_labels");
+				List<String> seatLabels = new ArrayList<>();
+				if (seatLabelsStr != null && !seatLabelsStr.isEmpty()) {
+					seatLabels.addAll(Arrays.asList(seatLabelsStr.split(",")));
+				}
 
-    // Adds a new city to the list
-    public static void addCity(City city) {
-        cities.add(city);
-    }
+				bookings.add(new Booking(rs.getString("booking_id"), rs.getString("movie_id"), rs.getInt("theatre_id"),
+						rs.getString("showtime"), seatLabels, rs.getDouble("total_amount"), rs.getString("status")));
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching bookings: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return bookings;
+	}
 
-    // Adds a new theatre to the list
-    public static void addTheatre(Theatre theatre) {
-        theatres.add(theatre);
-    }
+	/**
+	 * Retrieves a booking by its ID.
+	 * 
+	 * @param bookingId Booking ID to search for
+	 * @return Booking object if found, null otherwise
+	 */
+	public static Booking getBookingById(String bookingId) {
+		String query = "SELECT * FROM bookings WHERE booking_id = ?";
 
-    // Adds a new movie to the list
-    public static void addMovie(Movie movie) {
-        movies.add(movie);
-    }
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
-    // Adds a new showtime to the list
-    public static void addShowtime(Showtime showtime) {
-        showtimes.add(showtime);
-    }
+			stmt.setString(1, bookingId);
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				String seatLabelsStr = rs.getString("seat_labels");
+				List<String> seatLabels = new ArrayList<>();
+				if (seatLabelsStr != null && !seatLabelsStr.isEmpty()) {
+					seatLabels.addAll(Arrays.asList(seatLabelsStr.split(",")));
+				}
+
+				return new Booking(rs.getString("booking_id"), rs.getString("movie_id"), rs.getInt("theatre_id"),
+						rs.getString("showtime"), seatLabels, rs.getDouble("total_amount"), rs.getString("status"));
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching booking: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * Adds a new booking to the database.
+	 * 
+	 * @param booking Booking object to add
+	 */
+	public static void addBooking(Booking booking) {
+		String query = "INSERT INTO bookings (booking_id, movie_id, theatre_id, showtime, seat_labels, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+
+			stmt.setString(1, booking.getBookingId());
+			stmt.setString(2, booking.getMovieId());
+			stmt.setInt(3, booking.getTheatreId());
+			stmt.setString(4, booking.getShowtime());
+			stmt.setString(5, String.join(",", booking.getSeatLabels()));
+			stmt.setDouble(6, booking.getTotalAmount());
+			stmt.setString(7, booking.getStatus());
+
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("Error adding booking: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Updates an existing booking in the database.
+	 * 
+	 * @param booking Booking object with updated information
+	 */
+	public static void updateBooking(Booking booking) {
+		String query = "UPDATE bookings SET status = ?, total_amount = ?, seat_labels = ? WHERE booking_id = ?";
+
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+
+			stmt.setString(1, booking.getStatus());
+			stmt.setDouble(2, booking.getTotalAmount());
+			stmt.setString(3, String.join(",", booking.getSeatLabels()));
+			stmt.setString(4, booking.getBookingId());
+
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			System.out.println("Error updating booking: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Deletes a booking from the database.
+	 * 
+	 * @param bookingId Booking ID to delete
+	 */
+	public static void deleteBooking(String bookingId) {
+		String query = "DELETE FROM bookings WHERE booking_id = ?";
+
+		try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+
+			stmt.setString(1, bookingId);
+			int rowsAffected = stmt.executeUpdate();
+
+			if (rowsAffected > 0) {
+				System.out.println("Booking deleted successfully!");
+			} else {
+				System.out.println("Booking not found!");
+			}
+		} catch (SQLException e) {
+			System.out.println("Error deleting booking: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
 }
