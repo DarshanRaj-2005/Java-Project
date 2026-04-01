@@ -1,44 +1,54 @@
 package org.expleo.TicketBookingJavaProject.model;
 
-import java.util.List;
-
-// Model class representing a Theatre entity
+/**
+ * Model class representing a Theatre.
+ * Contains information about theatres including name, city, and admin assignment.
+ */
 public class Theatre {
 
-    // Unique identifier for the theatre
+    // Unique identifier
     private int id;
-
-    // Name of the theatre
+    
+    // Theatre name
     private String name;
+    
+    // City where theatre is located
+    private String city;
+    
+    // Admin user ID (0 if no admin assigned)
+    private int adminId;
 
-    // List of movies available in this theatre
-    private List<Movie> movies;
-
-    // Parameterized constructor to initialize theatre details
-    public Theatre(int id, String name, List<Movie> movies) {
+    /**
+     * Constructor to initialize theatre.
+     * @param id Theatre ID
+     * @param name Theatre name
+     * @param city City name
+     */
+    public Theatre(int id, String name, String city) {
         this.id = id;
         this.name = name;
-        this.movies = movies;
+        this.city = city;
+        this.adminId = 0; // Default: no admin assigned
     }
 
-    // Getter method to retrieve theatre ID
-    public int getId() {
-        return id;
-    }
+    // Getter and Setter methods
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    // Getter method to retrieve theatre name
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    // Getter method to retrieve list of movies in this theatre
-    public List<Movie> getMovies() {
-        return movies;
-    }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-    // toString method for easy display of theatre details
+    public int getAdminId() { return adminId; }
+    public void setAdminId(int adminId) { this.adminId = adminId; }
+
+    /**
+     * String representation of theatre.
+     */
     @Override
     public String toString() {
-        return id + ". " + name;
+        return id + ". " + name + " (" + city + ")";
     }
 }
