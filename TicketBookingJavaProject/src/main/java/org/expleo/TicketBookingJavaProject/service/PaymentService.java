@@ -1,61 +1,44 @@
 package org.expleo.TicketBookingJavaProject.service;
 
 import org.expleo.TicketBookingJavaProject.model.Payment;
-<<<<<<< HEAD
-
-public class PaymentService {
-
-    public Payment processPayment(double amount, String method) {
-
-        Payment payment = new Payment();
-=======
+import org.expleo.TicketBookingJavaProject.exception.PaymentErrorException;
 import java.util.Random;
 
 /*
  * Service class handles payment processing
- * Manages payment transactions
+ * Manages payment transactions and validations
  */
 public class PaymentService {
 
-    /*
-     * Processes payment for given amount
-     * @param amount Payment amount
-     * @param method Payment method (CARD/UPI/CASH)
-     * @return Payment object with transaction details
-     */
+    // Processes payment for given amount
     public Payment processPayment(double amount, String method) {
-
-        // Create new payment object
-        Payment payment = new Payment();
-        payment.setPaymentId(new Random().nextInt(1000));
->>>>>>> 35d0e4124a3a2dc0a7a67de3fb3e0d2628a3f533
-        payment.setAmount(amount);
-        payment.setMethod(method);
-        payment.setStatus("SUCCESS");
-
-<<<<<<< HEAD
-        System.out.println("Payment of Rs." + amount + " done using " + method);
-=======
-        // Display payment success message
-        System.out.println("Payment Successful using " + method);
->>>>>>> 35d0e4124a3a2dc0a7a67de3fb3e0d2628a3f533
-
+        int paymentId = new Random().nextInt(1000); // Generate random payment ID
+        Payment payment = new Payment(paymentId, amount, method, "SUCCESS");
+        System.out.println("Payment processed successfully using " + method + "!");
         return payment;
     }
 
-<<<<<<< HEAD
+    // Validates credit/debit card details (16 digits, 3-digit CVV)
+    public void validateCardPayment(String cardNumber, String cvv) {
+        if (cardNumber == null || cardNumber.length() != 16 || !cardNumber.matches("\\d+")) {
+            throw new PaymentErrorException("Invalid Card Number! Must be exactly 16 digits.");
+        }
+        if (cvv == null || cvv.length() != 3 || !cvv.matches("\\d+")) {
+            throw new PaymentErrorException("Invalid CVV! Must be exactly 3 digits.");
+        }
+        System.out.println("Card details validated successfully.");
+    }
+
+    // Validates UPI ID format (must contain @ and be at least 5 characters)
+    public void validateUpiPayment(String upiId) {
+        if (upiId == null || !upiId.contains("@") || upiId.length() < 5) {
+            throw new PaymentErrorException("Invalid UPI ID! Format should be: user@bank");
+        }
+        System.out.println("UPI ID validated successfully.");
+    }
+
+    // Validates if payment is successful
     public boolean validatePayment(Payment payment) {
-        return payment.getStatus().equalsIgnoreCase("SUCCESS");
+        return payment != null && "SUCCESS".equalsIgnoreCase(payment.getStatus());
     }
 }
-=======
-    /*
-     * Validates if payment is successful
-     * @param payment Payment object to validate
-     * @return true if payment status is SUCCESS
-     */
-    public boolean validatePayment(Payment payment) {
-        return payment.getStatus().equalsIgnoreCase("SUCCESS");
-    }
-}
->>>>>>> 35d0e4124a3a2dc0a7a67de3fb3e0d2628a3f533
