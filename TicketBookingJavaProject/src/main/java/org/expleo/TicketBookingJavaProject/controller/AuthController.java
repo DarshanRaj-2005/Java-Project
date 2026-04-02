@@ -1,5 +1,10 @@
 package org.expleo.TicketBookingJavaProject.controller;
 
+import java.util.Scanner;
+
+import org.expleo.TicketBookingJavaProject.model.User;
+import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
+
 // Handles user registration and login operations
 public class AuthController {
 
