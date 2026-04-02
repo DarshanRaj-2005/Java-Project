@@ -18,15 +18,21 @@ public class Payment {
     // Status of payment (SUCCESS, FAILED)
     private String status;
 
-    // Getter methods
-    public int getPaymentId() { return paymentId; }
-    public double getAmount() { return amount; }
-    public String getMethod() { return method; }
-    public String getStatus() { return status; }
+    // Constructor to initialize payment fields
+    public Payment(int paymentId, double amount, String method, String status) {
+        this.paymentId = paymentId;
+        this.amount = amount;
+        this.method = method;
+        this.status = status;
+    }
 
-    // Setter methods
+    // Getter and Setter methods
+    public int getPaymentId() { return paymentId; }
     public void setPaymentId(int paymentId) { this.paymentId = paymentId; }
+    public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
+    public String getMethod() { return method; }
     public void setMethod(String method) { this.method = method; }
+    public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 }

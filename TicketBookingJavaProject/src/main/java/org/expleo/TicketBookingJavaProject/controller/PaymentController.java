@@ -9,30 +9,16 @@ import org.expleo.TicketBookingJavaProject.service.PaymentService;
  */
 public class PaymentController {
 
-	// Service instance for payment operations
-	private PaymentService service = new PaymentService();
+    // Service instance for payment operations
+    private PaymentService service = new PaymentService();
 
-	/*
-	 * Initiates payment processing
-	 * 
-	 * @param amount Payment amount
-	 * 
-	 * @param method Payment method
-	 * 
-	 * @return Payment object with transaction details
-	 */
-	public Payment makePayment(double amount, String method) {
-		return service.processPayment(amount, method);
-	}
+    // Initiates payment processing
+    public Payment makePayment(double amount, String method) {
+        return service.processPayment(amount, method);
+    }
 
-	/*
-	 * Validates payment status
-	 * 
-	 * @param payment Payment to validate
-	 * 
-	 * @return true if payment is successful
-	 */
-	public boolean checkPayment(Payment payment) {
-		return service.validatePayment(payment);
-	}
+    // Validates payment status
+    public boolean checkPayment(Payment payment) {
+        return service.validatePayment(payment);
+    }
 }
