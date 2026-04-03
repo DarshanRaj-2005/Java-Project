@@ -1,3 +1,20 @@
+# Maven build folder
 target/
-*.class
 
+# Environment files
+.env
+
+# Eclipse files
+.project
+.classpath
+.settings/
+
+# IntelliJ (if used)
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
