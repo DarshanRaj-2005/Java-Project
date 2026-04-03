@@ -8,7 +8,7 @@ import org.expleo.TicketBookingJavaProject.config.DBConnection;
 
 /**
  * Repository implementation for Movie database operations.
- * Handles all CRUD operations for movies.
+ * Handles all CRUD operations for movies..
  */
 public class MovieRepositoryImpl {
 
