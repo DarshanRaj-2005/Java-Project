@@ -1,4 +1,4 @@
-package org.expleo.TicketBookingJavaProject.controller;
+package org.expleo.TicketBookingJavaProject.service;
 
 import org.expleo.TicketBookingJavaProject.model.Payment;
 import org.expleo.TicketBookingJavaProject.service.PaymentService;
