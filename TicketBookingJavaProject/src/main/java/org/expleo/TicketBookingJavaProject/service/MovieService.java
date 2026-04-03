@@ -1,37 +1,20 @@
 package org.expleo.TicketBookingJavaProject.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.expleo.TicketBookingJavaProject.model.Movie;
+import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
 
-/*
- * MovieService Class
- * Handles operations related to movies
- * Acts as a simple in-memory service for managing movie data
+/**
+ * Service class for movie operations.
+ * Note: Most movie operations are handled directly in MovieController.
+ * This service is kept for potential future business logic.
  */
 public class MovieService {
 
-    // Static list to store all movies (acts like a database)
-    public static List<Movie> movieList = new ArrayList<>();
-
-    /*
-     * Displays all available movies
+    /**
+     * Displays all movies (for backward compatibility).
      */
     public static void viewMovies() {
-
-        // Check if movie list is empty
-        if (MovieService.movieList.isEmpty()) {
-            System.out.println("No movies available.");
-            return;
-        }
-
-        // Display header
-        System.out.println("Available Movies:");
-
-        // Loop through movie list and print titles
-        for (Movie m : MovieService.movieList) {
-            System.out.println(m.getTitle());
-        }
+        System.out.println("\n--- AVAILABLE MOVIES ---");
+        System.out.println("(Use MovieController for full functionality)");
     }
 }
