@@ -10,8 +10,8 @@ import org.expleo.TicketBookingJavaProject.service.MovieService;
 public class Customer extends User {
 
     // Constructor calling parent class constructor
-    public Customer(String name, String email, String phone, String password) {
-        super(name, email, phone, password);
+    public Customer(int userId, String name, String email, String phone, String password, String role) {
+        super(userId, name, email, phone, password, role);
     }
     
     public static void viewMovies() {
