@@ -1,6 +1,7 @@
 package org.expleo.TicketBookingJavaProject.util;
 
 import java.util.Scanner;
+import java.util.NoSuchElementException;
 
 /**
  * Utility class for handling user input.
@@ -28,6 +29,9 @@ public class InputUtil {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
             return -1;
+        } catch (NoSuchElementException e) {
+            // No input available (e.g., end of stream)
+            return -1;
         }
     }
     
@@ -39,7 +43,11 @@ public class InputUtil {
      * @return The string entered by user (trimmed)
      */
     public static String getStringInput(Scanner sc) {
-        return sc.nextLine().trim();
+        try {
+            return sc.nextLine().trim();
+        } catch (NoSuchElementException e) {
+            return "";
+        }
     }
     
     /**
@@ -50,13 +58,17 @@ public class InputUtil {
      * @return true for yes, false for no
      */
     public static boolean getConfirmation(Scanner sc, boolean defaultValue) {
-        String input = sc.nextLine().trim().toLowerCase();
-        
-        if (input.isEmpty()) {
+        try {
+            String input = sc.nextLine().trim().toLowerCase();
+            
+            if (input.isEmpty()) {
+                return defaultValue;
+            }
+            
+            return input.equals("yes") || input.equals("y");
+        } catch (NoSuchElementException e) {
             return defaultValue;
         }
-        
-        return input.equals("yes") || input.equals("y");
     }
     
     /**
@@ -75,6 +87,8 @@ public class InputUtil {
             
             return Double.parseDouble(input);
         } catch (NumberFormatException e) {
+            return -1;
+        } catch (NoSuchElementException e) {
             return -1;
         }
     }
