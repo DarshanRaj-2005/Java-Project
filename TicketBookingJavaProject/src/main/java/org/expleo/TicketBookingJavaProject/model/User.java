@@ -23,9 +23,12 @@ public class User {
     
     // User role (Super Admin, Theatre Admin, Officer, Customer)
     protected String role;
+    
+    // Theatre ID (for Theatre Admins and Officers)
+    protected int theatreId;
 
     /**
-     * Constructor to initialize user.
+     * Constructor to initialize user (without theatre).
      */
     public User(int userId, String name, String email, String phone, String password, String role) {
         this.userId = userId;
@@ -34,6 +37,7 @@ public class User {
         this.phone = phone;
         this.password = password;
         this.role = role;
+        this.theatreId = 0; // Default: no theatre assigned
     }
 
     // Getter and Setter methods
@@ -54,4 +58,7 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    
+    public int getTheatreId() { return theatreId; }
+    public void setTheatreId(int theatreId) { this.theatreId = theatreId; }
 }
