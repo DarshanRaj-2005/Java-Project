@@ -224,6 +224,39 @@ public class MovieRepositoryImpl {
     }
 
     /**
+     * Searches movies by genre (exact match, case-insensitive).
+     * @param genre Genre to search for
+     * @return List of matching movies
+     */
+    public static List<Movie> searchByGenre(String genre) {
+        List<Movie> movies = new ArrayList<>();
+        String query = "SELECT * FROM movies WHERE LOWER(genre) = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, genre.toLowerCase());
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                movies.add(new Movie(
+                    rs.getString("id"),
+                    rs.getString("title"),
+                    rs.getString("genre"),
+                    rs.getString("language"),
+                    rs.getInt("duration"),
+                    rs.getString("releaseDate"),
+                    rs.getInt("theatre_id")
+                ));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error searching movies by genre: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return movies;
+    }
+
+    /**
      * Retrieves movies by theatre ID.
      * @param theatreId Theatre ID to filter by
      * @return List of movies in the specified theatre
