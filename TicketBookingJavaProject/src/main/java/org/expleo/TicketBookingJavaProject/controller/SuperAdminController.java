@@ -19,6 +19,37 @@ public class SuperAdminController {
     private Scanner sc = new Scanner(System.in);
 
     /**
+     * Validates email format.
+     * Email must contain "@" symbol.
+     * @param email Email to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return false;
+        }
+        return email.contains("@");
+    }
+
+    /**
+     * Validates phone number.
+     * Phone number must be exactly 10 digits.
+     * @param phone Phone number to validate
+     * @return true if valid, false otherwise
+     */
+    private boolean isValidPhone(String phone) {
+        if (phone == null || phone.length() != 10) {
+            return false;
+        }
+        for (int i = 0; i < phone.length(); i++) {
+            if (!Character.isDigit(phone.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Creates a new theatre.
      */
     public void createTheatre() {
@@ -52,18 +83,35 @@ public class SuperAdminController {
         System.out.print("Enter Name: ");
         String name = sc.nextLine().trim();
         
+        if (name.isEmpty()) {
+            System.out.println("Error: Name cannot be empty!");
+            return;
+        }
+        
         System.out.print("Enter Email: ");
         String email = sc.nextLine().trim();
         
-        System.out.print("Enter Phone: ");
+        // Validate email
+        if (!isValidEmail(email)) {
+            System.out.println("Error: Email must contain '@' symbol!");
+            return;
+        }
+        
+        System.out.print("Enter Phone (10 digits): ");
         String phone = sc.nextLine().trim();
+        
+        // Validate phone
+        if (!isValidPhone(phone)) {
+            System.out.println("Error: Phone number must be exactly 10 digits!");
+            return;
+        }
         
         System.out.print("Enter Password: ");
         String password = sc.nextLine().trim();
 
-        // Validate inputs
-        if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || password.isEmpty()) {
-            System.out.println("Error: All fields are required!");
+        // Validate password
+        if (password.isEmpty()) {
+            System.out.println("Error: Password cannot be empty!");
             return;
         }
 
