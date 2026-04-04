@@ -255,4 +255,22 @@ public class MovieController {
     public List<Movie> getMoviesForTheatre(int theatreId) {
         return MovieRepositoryImpl.getMoviesByTheatre(theatreId);
     }
+    
+    /**
+     * Views movies for a specific theatre (used by Officers).
+     * @param theatreId Theatre ID
+     */
+    public void viewMoviesForTheatre(int theatreId) {
+        List<Movie> movies = MovieRepositoryImpl.getMoviesByTheatre(theatreId);
+
+        if (movies.isEmpty()) {
+            System.out.println("No Movies Available.");
+            return;
+        }
+
+        for (int i = 0; i < movies.size(); i++) {
+            Movie m = movies.get(i);
+            System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ") | " + m.getGenre() + " | " + m.getDuration() + " mins");
+        }
+    }
 }
