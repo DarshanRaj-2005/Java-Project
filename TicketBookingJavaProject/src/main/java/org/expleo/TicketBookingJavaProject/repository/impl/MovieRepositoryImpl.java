@@ -1,3 +1,18 @@
+/*
+ * FILE: MovieRepositoryImpl.java
+ * PURPOSE: Handles all movie database operations.
+ *  AUTHOR: KRISHNAPRASATH B
+ * OOPS CONCEPTS USED:
+ * - Data Access Object (DAO) Pattern
+ * - Static methods for easy access
+ * 
+ * WHAT THIS FILE DOES:
+ * - CRUD operations for movies
+ * - Search movies by title, language, genre
+ * - Filter movies by theatre
+ * 
+ * DATABASE TABLE: movies
+ */
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
 import java.sql.*;
@@ -6,15 +21,14 @@ import java.util.List;
 import org.expleo.TicketBookingJavaProject.model.Movie;
 import org.expleo.TicketBookingJavaProject.config.DBConnection;
 
-/**
+/*
  * Repository implementation for Movie database operations.
- * Handles all CRUD operations for movies..
+ * Handles all CRUD operations for movies.
  */
 public class MovieRepositoryImpl {
 
-    /**
-     * Retrieves all movies from the database.
-     * @return List of all Movie objects
+    /*
+     * getAllMovies - Gets all movies
      */
     public static List<Movie> getAllMovies() {
         List<Movie> movies = new ArrayList<>();
@@ -42,10 +56,8 @@ public class MovieRepositoryImpl {
         return movies;
     }
 
-    /**
-     * Retrieves a movie by its ID.
-     * @param movieId The movie ID to search for
-     * @return Movie object if found, null otherwise
+    /*
+     * getMovieById - Gets movie by ID
      */
     public static Movie getMovieById(String movieId) {
         String query = "SELECT * FROM movies WHERE id = ?";
@@ -74,9 +86,8 @@ public class MovieRepositoryImpl {
         return null;
     }
 
-    /**
-     * Adds a new movie to the database.
-     * @param movie Movie object to add
+    /*
+     * addMovie - Adds new movie
      */
     public static void addMovie(Movie movie) {
         String query = "INSERT INTO movies (id, title, genre, language, duration, releaseDate, theatre_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -100,12 +111,8 @@ public class MovieRepositoryImpl {
         }
     }
 
-    /**
-     * Updates an existing movie in the database.
-     * Uses the movie ID to identify which record to update.
-     * 
-     * @param movieId The ID of the movie to update
-     * @param newMovie Movie object with new values
+    /*
+     * updateMovie - Updates movie information
      */
     public static void updateMovie(String movieId, Movie newMovie) {
         String query = "UPDATE movies SET title = ?, genre = ?, language = ?, duration = ?, releaseDate = ? WHERE id = ?";
@@ -133,9 +140,8 @@ public class MovieRepositoryImpl {
         }
     }
 
-    /**
-     * Deletes a movie from the database.
-     * @param movieId The ID of the movie to delete
+    /*
+     * deleteMovie - Removes movie
      */
     public static void deleteMovie(String movieId) {
         String query = "DELETE FROM movies WHERE id = ?";
@@ -157,10 +163,8 @@ public class MovieRepositoryImpl {
         }
     }
 
-    /**
-     * Searches movies by title (partial match, case-insensitive).
-     * @param title Title to search for
-     * @return List of matching movies
+    /*
+     * searchByTitle - Finds movies by title (partial match)
      */
     public static List<Movie> searchByTitle(String title) {
         List<Movie> movies = new ArrayList<>();
@@ -190,10 +194,8 @@ public class MovieRepositoryImpl {
         return movies;
     }
 
-    /**
-     * Searches movies by language (exact match, case-insensitive).
-     * @param language Language to search for
-     * @return List of matching movies
+    /*
+     * searchByLanguage - Finds movies by language
      */
     public static List<Movie> searchByLanguage(String language) {
         List<Movie> movies = new ArrayList<>();
@@ -223,10 +225,8 @@ public class MovieRepositoryImpl {
         return movies;
     }
 
-    /**
-     * Searches movies by genre (exact match, case-insensitive).
-     * @param genre Genre to search for
-     * @return List of matching movies
+    /*
+     * searchByGenre - Finds movies by genre
      */
     public static List<Movie> searchByGenre(String genre) {
         List<Movie> movies = new ArrayList<>();
@@ -256,10 +256,8 @@ public class MovieRepositoryImpl {
         return movies;
     }
 
-    /**
-     * Retrieves movies by theatre ID.
-     * @param theatreId Theatre ID to filter by
-     * @return List of movies in the specified theatre
+    /*
+     * getMoviesByTheatre - Gets movies for a specific theatre
      */
     public static List<Movie> getMoviesByTheatre(int theatreId) {
         List<Movie> movies = new ArrayList<>();
