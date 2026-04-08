@@ -1,22 +1,33 @@
+/*
+ * FILE: UserService.java
+ * PURPOSE: Handles user-related business logic.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: Simple interface
+ * - Composition: Uses UserRepositoryImpl
+ * - Author Tamil Kumar
+ */
 package org.expleo.TicketBookingJavaProject.service;
 
 import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 
-/**
+/*
  * Service class for user-related operations.
  * Contains business logic for user management.
  */
 public class UserService {
 
-    /**
-     * Updates user profile information.
-     * Saves changes to the database.
+    /*
+     * updateProfile - Updates user profile information
      * 
-     * @param user User object with updated information
-     * @param newName New name (if empty, keeps current name)
-     * @param newPhone New phone (if empty, keeps current phone)
-     * @param newPassword New password (if empty, keeps current password)
+     * Parameters:
+     * - user: User object with updated information
+     * - newName: New name (empty = keep current)
+     * - newPhone: New phone (empty = keep current)
+     * - newPassword: New password (empty = keep current)
+     * 
+     * Saves changes to the database.
      */
     public void updateProfile(User user, String newName, String newPhone, String newPassword) {
         // Update local object

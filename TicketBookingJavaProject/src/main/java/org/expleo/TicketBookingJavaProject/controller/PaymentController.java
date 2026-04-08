@@ -6,6 +6,7 @@ import org.expleo.TicketBookingJavaProject.service.PaymentService;
 /*
  * Controller acts as bridge between UI and Service layer
  * Handles payment-related requests
+ * - Author Tamil Kumar
  */
 public class PaymentController {
 

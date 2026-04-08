@@ -1,23 +1,40 @@
+/*
+ * FILE: Payment.java
+ * PURPOSE: Stores payment information for a booking.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private, accessed through methods
+ * - Inheritance: Cardpayment, Upipayment, Cashpayment extend this class
+ * - Author Tamil Kumar
+ * 
+ * HOW IT'S USED:
+ * - Created when a payment is processed
+ * - Contains payment method and status
+ */
 package org.expleo.TicketBookingJavaProject.model;
 
 /*
- * Payment Model Class
- * Represents payment information for ticket bookings
+ * WHAT THIS CLASS DOES:
+ * Represents a payment made for a booking.
+ * Stores payment ID, amount, method, and status.
  */
 public class Payment {
 
-    // Unique identifier for payment transaction
+    // Unique ID for this payment
     private int paymentId;
     
-    // Total amount to be paid
+    // How much was paid
     private double amount;
     
-    // Payment method used (CARD, UPI, CASH)
+    // Payment method: "CARD", "UPI", or "CASH"
     private String method;
     
-    // Status of payment (SUCCESS, FAILED)
+    // Payment status: "SUCCESS" or "FAILED"
     private String status;
 
+    /*
+     * Constructor - Creates a new Payment object
+     */
     public Payment(int paymentId, double amount, String method, String status) {
         this.paymentId = paymentId;
         this.amount = amount;
