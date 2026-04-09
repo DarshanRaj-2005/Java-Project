@@ -1,26 +1,70 @@
+/*
+ * FILE: BookingController.java
+ * PURPOSE: Handles the complete ticket booking process.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: Private fields and methods
+ * - Abstraction: Hides complex booking logic
+ * - Composition: Uses SeatService, BookingService, PaymentService
+ * 
+ * WHAT THIS FILE DOES:
+ * - Shows movie, theatre, and seat selection
+ * - Calculates ticket prices with GST
+ * - Processes payments
+ * - Confirms or cancels bookings
+ * 
+ * BOOKING FLOW:
+ * 1. Select movie
+ * 2. Select city
+ * 3. Select theatre
+ * 4. Select showtime
+ * 5. Select seats
+ * 6. Review and pay
+ * 7. Confirmation
+ */
+
+
+
+//------------Author Name: Darshan Raj, Rohini, Tamil Kumar, Krishna Prasath---------------
+
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
-import java.util.*;
-import org.expleo.TicketBookingJavaProject.model.*;
-import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
+
+import org.expleo.TicketBookingJavaProject.model.BillDetails;
+import org.expleo.TicketBookingJavaProject.model.Booking;
+import org.expleo.TicketBookingJavaProject.model.Movie;
+import org.expleo.TicketBookingJavaProject.model.Seat;
+import org.expleo.TicketBookingJavaProject.model.Theatre;
+import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.service.SeatService;
 import org.expleo.TicketBookingJavaProject.service.BookingService;
 import org.expleo.TicketBookingJavaProject.service.PaymentService;
+import org.expleo.TicketBookingJavaProject.service.SeatService;
 import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-/**
- * Controller for booking operations. Handles the complete booking flow from
- * movie selection to payment with tiered pricing, GST, and application fee.
- */
 public class BookingController {
+
+    private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
+    private MovieRepositoryImpl movieDAO = new MovieRepositoryImpl();
+    private BookingRepositoryImpl bookingDAO = new BookingRepositoryImpl();
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
 
     // Scanner for user input
     private Scanner sc = new Scanner(System.in);
 
-    // Reference to SearchController (for pre-selected movie)
+    // Reference to SearchController (for pre-selected movie from search)
     private SearchController searchController;
 
     // Reference to MovieController
@@ -31,23 +75,22 @@ public class BookingController {
     private BookingService bookingService = new BookingService();
     private PaymentService paymentService = new PaymentService();
 
-    // GST percentage applied to ticket amount
-    private static final double GST_PERCENTAGE = 3.5;
-    
-    // Application fee per ticket
-    private static final double APPLICATION_FEE = 10.0;
+    // Pricing constants
+    private static final double GST_PERCENTAGE = 3.5;  // 3.5% tax
+    private static final double APPLICATION_FEE = 10.0; // Rs.10 per ticket
 
+    /*
+     * Constructor - Sets up the controller
+     */
     public BookingController(SearchController searchController, MovieController movieController) {
         this.searchController = searchController;
         this.movieController = movieController;
     }
 
-    /**
-     * Starts the booking flow for a specific theatre (used by Officers).
-     * Officer can only book tickets for their assigned theatre.
+    /*
+     * startBookingForTheatre - For Officers to book tickets
      * 
-     * @param theatre The theatre to book tickets for
-     * @param officerUserId User ID of the officer (for tracking)
+     * Officers can only book for their assigned theatre
      */
     public void startBookingForTheatre(Theatre theatre, int officerUserId) {
         // Select movie from this theatre only
@@ -66,8 +109,8 @@ public class BookingController {
         bookSeats(movie, theatre, theatre.getCity(), showtime, -1, officerUserId);
     }
 
-    /**
-     * Selects a movie from a specific theatre.
+    /*
+     * selectMovieFromTheatre - Shows movies at a specific theatre
      */
     private Movie selectMovieFromTheatre(Theatre theatre) {
         List<Movie> movies = movieController.getMoviesForTheatre(theatre.getId());
@@ -95,11 +138,16 @@ public class BookingController {
         return movies.get(choice - 1);
     }
 
-    /**
-     * Starts the booking flow.
+    /*
+     * startBooking - Main booking entry point
      * 
-     * @param ticketCount Number of tickets to book (-1 if not specified)
-     * @param userId User ID of the customer (0 for guest)
+     * Parameters:
+     * - ticketCount: Number of tickets (-1 if not specified)
+     * - userId: User ID (0 for guest)
+     * 
+     * Handles two cases:
+     * 1. Movie was pre-selected through search
+     * 2. Normal flow - select everything step by step
      */
     public void startBooking(int ticketCount, int userId) {
         System.out.println("\n--- BOOKING FLOW ---");
@@ -110,25 +158,25 @@ public class BookingController {
         String city = null;
 
         if (preSelected != null) {
-            // Movie was pre-selected through search
+            // Case 1: Movie pre-selected from search
             System.out.println("Using previously selected movie: " + preSelected.getTitle() + " ("
                     + preSelected.getLanguage() + ")");
 
-            // Step 1: Select City (get cities where this movie is available)
+            // Step 1: Select city (where movie is playing)
             city = selectCityForMovie(preSelected);
             if (city == null) {
                 searchController.clearSelectedMovie();
                 return;
             }
 
-            // Step 2: Select Theatre in that city
+            // Step 2: Select theatre in that city
             theatre = selectTheatreForMovie(preSelected, city);
             if (theatre == null) {
                 searchController.clearSelectedMovie();
                 return;
             }
 
-            // Get the movie object from this theatre
+            // Get movie object from this theatre
             movie = movieController.getMoviesForTheatre(theatre.getId()).stream()
                     .filter(m -> m.getTitle().equalsIgnoreCase(preSelected.getTitle())
                             && m.getLanguage().equalsIgnoreCase(preSelected.getLanguage()))
@@ -141,41 +189,34 @@ public class BookingController {
             }
 
         } else {
-            // Normal flow - no pre-selected movie
-            // Step 1: Select City
+            // Case 2: Normal flow - select everything
             city = selectCity();
-            if (city == null)
-                return;
+            if (city == null) return;
 
-            // Step 2: Select Theatre in that city
             theatre = selectTheatre(city);
-            if (theatre == null)
-                return;
+            if (theatre == null) return;
 
-            // Step 3: Select Movie
             movie = selectMovie(theatre.getId());
-            if (movie == null)
-                return;
+            if (movie == null) return;
         }
 
-        // Step 4: Select Showtime
+        // Step: Select showtime
         String showtime = selectShowtime();
-        if (showtime == null)
-            return;
+        if (showtime == null) return;
 
-        // Step 5: Book Seats
+        // Step: Book seats
         bookSeats(movie, theatre, city, showtime, ticketCount, userId);
 
         // Clear selected movie after booking
         searchController.clearSelectedMovie();
     }
 
-    /**
-     * Selects city when a movie is pre-selected. Only shows cities where the movie
-     * is available.
+    /*
+     * selectCityForMovie - Select city when movie is pre-selected
+     * 
+     * Only shows cities where the movie is available
      */
     private String selectCityForMovie(Movie movie) {
-        // Get all theatres showing this movie
         List<Theatre> theatresWithMovie = searchController.getTheatresForSelectedMovie(null);
 
         if (theatresWithMovie.isEmpty()) {
@@ -210,8 +251,8 @@ public class BookingController {
         return cities.get(choice - 1);
     }
 
-    /**
-     * Selects theatre for a pre-selected movie in a specific city.
+    /*
+     * selectTheatreForMovie - Select theatre for pre-selected movie
      */
     private Theatre selectTheatreForMovie(Movie movie, String city) {
         List<Theatre> theatres = searchController.getTheatresForSelectedMovie(city);
@@ -240,12 +281,11 @@ public class BookingController {
         return theatres.get(choice - 1);
     }
 
-    /**
-     * Selects city from all available cities.
+    /*
+     * selectCity - Select city from all available cities
      */
     private String selectCity() {
-        // Get cities from database
-        List<String> cities = TheatreRepositoryImpl.getAllCities();
+        List<String> cities = theatreDAO.getAllCities();
 
         if (cities.isEmpty()) {
             System.out.println("No cities available. Please contact Super Admin to add theatres.");
@@ -268,15 +308,14 @@ public class BookingController {
         return cities.get(choice - 1);
     }
 
-    /**
-     * Selects theatre in a given city.
+    /*
+     * selectTheatre - Select theatre in a city
      */
     private Theatre selectTheatre(String city) {
-        List<Theatre> theatres = TheatreRepositoryImpl.getTheatresByCity(city);
+        List<Theatre> theatres = theatreDAO.getTheatresByCity(city);
 
         if (theatres.isEmpty()) {
             System.out.println("No theatres available in " + city + ".");
-            System.out.println("Please contact Super Admin to add theatres.");
             return null;
         }
 
@@ -296,8 +335,8 @@ public class BookingController {
         return theatres.get(choice - 1);
     }
 
-    /**
-     * Selects movie from a theatre.
+    /*
+     * selectMovie - Select movie from a theatre
      */
     private Movie selectMovie(int theatreId) {
         List<Movie> movies = movieController.getMoviesForTheatre(theatreId);
@@ -325,8 +364,8 @@ public class BookingController {
         return movies.get(choice - 1);
     }
 
-    /**
-     * Selects showtime for the movie.
+    /*
+     * selectShowtime - Select when to watch
      */
     private String selectShowtime() {
         List<String> shows = Arrays.asList("10:00 AM", "01:30 PM", "06:00 PM", "10:00 PM");
@@ -347,10 +386,20 @@ public class BookingController {
         return shows.get(choice - 1);
     }
 
-    /**
-     * Handles seat selection and booking process with tiered pricing.
+    /*
+     * bookSeats - Handles the seat selection and booking process
+     * 
+     * Steps:
+     * 1. Get number of tickets
+     * 2. Show seat layout
+     * 3. Let user select seats
+     * 4. Calculate price
+     * 5. Allow modification
+     * 6. Process payment
+     * 7. Confirm booking
      */
     private void bookSeats(Movie movie, Theatre theatre, String city, String showtime, int ticketCount, int userId) {
+        // Session key: theatreID_movieID_showtime
         String sessionKey = theatre.getId() + "_" + movie.getId() + "_" + showtime.replace(" ", "_").replace(":", "");
 
         // Get number of tickets
@@ -364,55 +413,55 @@ public class BookingController {
             }
         }
 
-        // NEW: Max per transaction limit (Row Capacity)
+        // Maximum 10 seats per transaction
         if (ticketCount > 10) {
-            System.out.println("❌ You can only book up to 10 seats in a single transaction (Maximum capacity of a row)!");
+            System.out.println("Error: You can only book up to 10 seats in a single transaction!");
             return;
         }
 
-        // Validate ticket count against capacity and availability
+        // Get seat availability
         List<Seat> allSeats = seatService.getSeatLayout(sessionKey);
         List<Seat> availableSeats = seatService.getAvailableSeats(sessionKey);
         int totalCapacity = allSeats.size();
         int availableCount = availableSeats.size();
 
         if (ticketCount > totalCapacity) {
-            System.out.println("❌ Requested seats exceed theatre capacity!");
+            System.out.println("Error: Requested seats exceed theatre capacity!");
             return;
         }
 
         if (ticketCount > availableCount) {
-            System.out.println("❌ Only " + availableCount + " seats are available. Cannot book " + ticketCount + " tickets.");
+            System.out.println("Error: Only " + availableCount + " seats are available.");
             return;
         }
 
-        // Display seat layout with prices
+        // Show seat layout
         displaySeatLayoutWithPrices(sessionKey);
 
-        // Get seat selection from user
+        // Get seat selection
         List<String> selectedSeats = selectSeats(sessionKey, ticketCount);
         if (selectedSeats == null) {
             return;
         }
 
-        // Calculate total price based on seat rows
+        // Calculate price
         double[] priceInfo = calculatePrice(selectedSeats);
         double ticketAmount = priceInfo[0];
         
-        // Create bill details
+        // Create bill
         BillDetails bill = new BillDetails(ticketCount, ticketAmount, GST_PERCENTAGE, APPLICATION_FEE);
 
-        // Show booking summary
+        // Show summary
         showBookingSummary(movie, theatre, city, showtime, selectedSeats, bill);
 
-        // Ask user if they want to modify seats
+        // Allow seat modification
         List<String> finalSeats = selectedSeats;
         while (true) {
             System.out.print("\nDo you want to modify seats? (yes/no): ");
             String modifyChoice = sc.nextLine().trim().toLowerCase();
             
             if (modifyChoice.equals("yes")) {
-                // Release current seats first
+                // Release current seats
                 for (String label : finalSeats) {
                     Seat s = seatService.getSeatByLabel(sessionKey, label);
                     if (s != null) {
@@ -430,27 +479,25 @@ public class BookingController {
                     return;
                 }
 
-                // NEW: Validate new ticket count against row capacity
                 if (ticketCount > 10) {
-                    System.out.println("❌ You can only book up to 10 seats in a single transaction (Maximum capacity of a row)!");
+                    System.out.println("Error: Maximum 10 seats per transaction!");
                     return;
                 }
 
-                // Validate new ticket count
                 List<Seat> currentAvailable = seatService.getAvailableSeats(sessionKey);
                 int currentTotal = seatService.getSeatLayout(sessionKey).size();
                 
                 if (ticketCount > currentTotal) {
-                    System.out.println("❌ Requested seats exceed theatre capacity!");
+                    System.out.println("Error: Requested seats exceed theatre capacity!");
                     return;
                 }
                 
                 if (ticketCount > currentAvailable.size()) {
-                    System.out.println("❌ Only " + currentAvailable.size() + " seats are available. Cannot book " + ticketCount + " tickets.");
+                    System.out.println("Error: Only " + currentAvailable.size() + " seats are available.");
                     return;
                 }
                 
-                // Display updated seat layout
+                // Show updated layout
                 displaySeatLayoutWithPrices(sessionKey);
                 
                 // Select new seats
@@ -464,7 +511,6 @@ public class BookingController {
                 ticketAmount = priceInfo[0];
                 bill = new BillDetails(ticketCount, ticketAmount, GST_PERCENTAGE, APPLICATION_FEE);
                 
-                // Show updated summary
                 showBookingSummary(movie, theatre, city, showtime, finalSeats, bill);
             } else if (modifyChoice.equals("no")) {
                 break;
@@ -492,8 +538,8 @@ public class BookingController {
         processPayment(movie, theatre, city, showtime, finalSeats, bill, userId);
     }
 
-    /**
-     * Selects seats from user input.
+    /*
+     * selectSeats - Gets user's seat selection
      */
     private List<String> selectSeats(String sessionKey, int ticketCount) {
         List<String> selectedSeats = new ArrayList<>();
@@ -501,7 +547,7 @@ public class BookingController {
         System.out.println("Enter " + ticketCount + " seat labels to book (comma-separated, e.g., A1, A2): ");
         String input = sc.nextLine().toUpperCase();
 
-        // Parse seat labels (comma or space separated)
+        // Parse input
         String[] labels = input.split("[,\\s]+");
         for (String label : labels) {
             if (!label.trim().isEmpty()) {
@@ -509,7 +555,7 @@ public class BookingController {
             }
         }
 
-        // Validate seat count
+        // Validate count
         if (selectedSeats.size() != ticketCount) {
             System.out.println("Error: You must select exactly " + ticketCount + " seats!");
             return null;
@@ -520,7 +566,7 @@ public class BookingController {
             return null;
         }
 
-        // Validate seat selection
+        // Validate selection
         String validation = seatService.validateMultipleSeatSelection(sessionKey, selectedSeats, ticketCount);
         if (!validation.equals("VALID")) {
             System.out.println("Error: " + validation);
@@ -530,11 +576,13 @@ public class BookingController {
         return selectedSeats;
     }
 
-    /**
-     * Calculates price based on seat rows.
-     * Top 3 rows (A, B, C): Rs. 190
-     * Next rows (D, E, F, G): Rs. 160
-     * Bottom rows (H, I, J): Rs. 60
+    /*
+     * calculatePrice - Calculates ticket price based on seat rows
+     * 
+     * PRICING:
+     * - Rows A, B, C (top): Rs. 190
+     * - Rows D, E, F, G: Rs. 160
+     * - Rows H, I, J (bottom): Rs. 60
      */
     private double[] calculatePrice(List<String> seats) {
         double totalPrice = 0;
@@ -545,19 +593,18 @@ public class BookingController {
             if (seat.length() > 0) {
                 char row = seat.charAt(0);
                 
-                // Top 3 rows: A, B, C -> Rs. 190
+                // Top rows: A, B, C
                 if (row >= 'A' && row <= 'C') {
                     price = 190;
                 }
-                // Next rows: D, E, F, G -> Rs. 160
+                // Middle rows: D, E, F, G
                 else if (row >= 'D' && row <= 'G') {
                     price = 160;
                 }
-                // Bottom rows: H, I, J -> Rs. 60
+                // Bottom rows: H, I, J
                 else if (row >= 'H' && row <= 'J') {
                     price = 60;
                 }
-                // Default price if row doesn't match
                 else {
                     price = 160;
                 }
@@ -574,8 +621,8 @@ public class BookingController {
         return new double[]{totalPrice, GST_PERCENTAGE, APPLICATION_FEE};
     }
 
-    /**
-     * Displays the seat layout with prices for each row.
+    /*
+     * displaySeatLayoutWithPrices - Shows seat map with prices
      */
     private void displaySeatLayoutWithPrices(String sessionKey) {
         System.out.println("\n--- SEAT LAYOUT WITH PRICES ---");
@@ -610,8 +657,8 @@ public class BookingController {
         System.out.println();
     }
 
-    /**
-     * Shows the booking summary with bill details.
+    /*
+     * showBookingSummary - Shows booking details
      */
     private void showBookingSummary(Movie movie, Theatre theatre, String city, String showtime, 
                                     List<String> selectedSeats, BillDetails bill) {
@@ -623,8 +670,11 @@ public class BookingController {
         bill.printBill();
     }
 
-    /**
-     * Processes payment for the booking.
+    /*
+     * processPayment - Handles payment for booking
+     * 
+     * Supports: Card, UPI, Cash
+     * Cash only for Officers/Admins (not online customers)
      */
     private void processPayment(Movie movie, Theatre theatre, String city, String showtime, 
                                 List<String> selectedSeats, BillDetails bill, int userId) {
@@ -632,9 +682,9 @@ public class BookingController {
         boolean validPayment = false;
 
         // Get user role
-        String role = "Customer"; // Default role
+        String role = "Customer";
         if (userId > 0) {
-            User user = UserRepositoryImpl.getUserById(userId);
+            User user = userDAO.getUserById(userId);
             if (user != null) {
                 role = user.getRole();
             }
@@ -660,18 +710,17 @@ public class BookingController {
                     validPayment = true;
 
                 } else if (method.equalsIgnoreCase("Cash")) {
-                    // Check if role is allowed to pay cash (Officer/Admin)
+                    // Cash only for Officers/Admins
                     if (role.equalsIgnoreCase("Customer") || userId <= 0) {
-                        System.out.println("❌ Cash not allowed for online booking!");
+                        System.out.println("Error: Cash not allowed for online booking!");
                     } else {
                         validPayment = true;
                     }
                 } else {
-                    System.out.println("❌ Invalid payment method!");
+                    System.out.println("Error: Invalid payment method!");
                 }
             } catch (org.expleo.TicketBookingJavaProject.exception.PaymentErrorException e) {
-                System.out.println("❌ Payment Failed: " + e.getMessage());
-                // Ask if they want to try again
+                System.out.println("Error: " + e.getMessage());
                 System.out.print("Try another payment? (yes/no): ");
                 if (!sc.nextLine().trim().equalsIgnoreCase("yes")) {
                     System.out.println("Booking cancelled due to payment failure.");
@@ -689,7 +738,7 @@ public class BookingController {
             }
         }
 
-        System.out.println("✅ Payment Successful via " + method + "!");
+        System.out.println("Payment Successful via " + method + "!");
 
         // Create booking
         String bookingId = bookingService.generateBookingId();
@@ -707,7 +756,7 @@ public class BookingController {
             }
         }
 
-        // Display confirmation
+        // Show confirmation
         System.out.println("\n=================================");
         System.out.println("       BOOKING CONFIRMED!        ");
         System.out.println("=================================");
@@ -723,22 +772,15 @@ public class BookingController {
         System.out.println("=================================");
     }
 
-    /**
-     * Displays the seat layout for a session (legacy method).
-     */
-    private void displaySeatLayout(String sessionKey) {
-        displaySeatLayoutWithPrices(sessionKey);
-    }
-
-    /**
-     * Cancels an existing booking.
+    /*
+     * cancelBooking - Cancels an existing booking
      */
     public void cancelBooking(int userId) {
         System.out.println("\n--- CANCEL BOOKING ---");
         
-        // First show user's bookings if they are logged in
+        // Show user's bookings
         if (userId > 0) {
-            List<Booking> userBookings = BookingRepositoryImpl.getBookingsByUserId(userId);
+            List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId);
             if (!userBookings.isEmpty()) {
                 System.out.println("\nYour Bookings:");
                 for (Booking b : userBookings) {
@@ -754,9 +796,9 @@ public class BookingController {
         String id = sc.nextLine().toUpperCase().trim();
 
         try {
-            Booking booking = BookingRepositoryImpl.getBookingById(id);
+            Booking booking = bookingDAO.getBookingById(id);
             if (booking != null) {
-                // Check if user owns this booking (for customers)
+                // Check ownership (customers only)
                 if (userId > 0 && booking.getUserId() != userId) {
                     System.out.println("Error: You can only cancel your own bookings!");
                     return;
@@ -765,7 +807,7 @@ public class BookingController {
                 double refundAmount = booking.getTotalAmount();
                 bookingService.cancelBooking(id);
                 
-                // Show refund message
+                // Show refund info
                 System.out.println("\n=================================");
                 System.out.println("      REFUND INFORMATION          ");
                 System.out.println("=================================");
@@ -781,8 +823,8 @@ public class BookingController {
         }
     }
 
-    /**
-     * Views bookings for a customer.
+    /*
+     * viewMyBookings - Shows user's booking history
      */
     public void viewMyBookings(int userId) {
         System.out.println("\n--- MY BOOKINGS ---");
@@ -792,7 +834,7 @@ public class BookingController {
             return;
         }
         
-        List<Booking> userBookings = BookingRepositoryImpl.getBookingsByUserId(userId);
+        List<Booking> userBookings = bookingDAO.getBookingsByUserId(userId);
         
         if (userBookings.isEmpty()) {
             System.out.println("You have no bookings yet.");
@@ -804,9 +846,8 @@ public class BookingController {
         System.out.println("+------------------------------------------+");
         
         for (Booking b : userBookings) {
-            // Get movie and theatre details
-            Movie movie = MovieRepositoryImpl.getMovieById(b.getMovieId());
-            Theatre theatre = TheatreRepositoryImpl.getTheatreById(b.getTheatreId());
+            Movie movie = movieDAO.getMovieById(b.getMovieId());
+            Theatre theatre = theatreDAO.getTheatreById(b.getTheatreId());
             
             String movieName = (movie != null) ? movie.getTitle() : "Unknown";
             String theatreName = (theatre != null) ? theatre.getName() : "Unknown";
