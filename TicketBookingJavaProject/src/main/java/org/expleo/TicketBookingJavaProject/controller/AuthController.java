@@ -5,33 +5,34 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: All fields are private
  * - Abstraction: Hides validation complexity
- * - Author Tamil Kumar
  * 
  * WHAT THIS FILE DOES:
  * - Registers new customers
  * - Validates email and phone formats
  * - Authenticates users during login
  * 
- * IMPORTANT: Only customers can self-register. Admins are created by Super Admin.
+ * Only customers can self-register. Admins are created by Super Admin.
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.Scanner;
+
 import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 
-/*
- * Controller for user registration and login operations.
- * Handles customer self-registration with validation.
- */
 public class AuthController {
+
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
 
     // Scanner for reading user input
     private Scanner sc = new Scanner(System.in);
 
-    /*
-     * register - Creates a new customer account
-     * 
+    /* 
      * Steps:
      * 1. Ask for user details
      * 2. Validate email (must contain @)
@@ -39,8 +40,9 @@ public class AuthController {
      * 4. Check if email already exists
      * 5. Save to database
      * 
-     * Note: Only customers can use this. Admins are created by Super Admin.
+     * Only customers can use this. Admins are created by Super Admin.
      */
+    
     public void register() {
         System.out.println("\n--- CUSTOMER REGISTRATION ---");
 
@@ -76,7 +78,7 @@ public class AuthController {
 
         // Create new customer with role "Customer"
         User newUser = new User(0, name, email, phone, password, "Customer");
-        UserRepositoryImpl.addUser(newUser);
+        userDAO.addUser(newUser);
 
         System.out.println("\nRegistration Successful!");
         System.out.println("You can now login with your email and password.");
@@ -110,7 +112,7 @@ public class AuthController {
             }
             
             // Check if email already exists
-            if (UserRepositoryImpl.getUserByEmail(email) != null) {
+            if (userDAO.getUserByEmail(email) != null) {
                 System.out.println("Error: This email is already registered!");
                 continue;
             }
@@ -170,7 +172,7 @@ public class AuthController {
         }
 
         // Find user by email
-        User user = UserRepositoryImpl.getUserByEmail(email);
+        User user = userDAO.getUserByEmail(email);
 
         // Check if user exists and password matches
         if (user != null && user.getPassword().equals(password)) {

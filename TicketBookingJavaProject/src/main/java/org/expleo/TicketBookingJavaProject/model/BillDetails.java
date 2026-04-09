@@ -5,12 +5,17 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: All fields are private, calculated once in constructor
  * - Abstraction: Shows final amount without revealing calculation steps
- * - Author Tamil Kumar
+ * 
  * HOW IT'S USED:
  * - Created when user selects seats
  * - Shows breakdown of costs (ticket + GST + fees)
  * - Displays final amount to pay
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
 /*

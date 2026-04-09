@@ -5,12 +5,16 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: All fields are private, accessed through methods
  * - Inheritance: Cardpayment, Upipayment, Cashpayment extend this class
- * - Author Tamil Kumar
  * 
  * HOW IT'S USED:
  * - Created when a payment is processed
  * - Contains payment method and status
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
 /*

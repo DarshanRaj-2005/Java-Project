@@ -5,7 +5,6 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: Static methods
  * - Data Access Object (DAO) Pattern: Direct database access
- * - Author Tamil Kumar
  * 
  * WHAT THIS FILE DOES:
  * - Create, Read, Update, Delete users
@@ -15,19 +14,44 @@
  * 
  * DATABASE TABLE: users
  */
+
+
+//------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
+
+
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import org.expleo.TicketBookingJavaProject.model.User;
+
 import org.expleo.TicketBookingJavaProject.config.DBConnection;
+import org.expleo.TicketBookingJavaProject.dao.UserDAO;
+import org.expleo.TicketBookingJavaProject.model.User;
 
 /*
  * Repository implementation for User database operations.
- * Handles all CRUD operations for users.
+ * Implements UserDAO interface for proper DAO pattern.
  */
-public class UserRepositoryImpl {
+public class UserRepositoryImpl implements UserDAO {
+
+    private static UserRepositoryImpl instance;
+
+    public static UserRepositoryImpl getInstance() {
+        if (instance == null) {
+            instance = new UserRepositoryImpl();
+            initializeDefaultAdmin();
+        }
+        return instance;
+    }
+
+    public UserRepositoryImpl() {
+    }
 
     // Static initializer - Runs once when class is loaded
     // Creates default Super Admin if not exists
@@ -81,11 +105,12 @@ public class UserRepositoryImpl {
     }
 
     /*
-     * getAllUsers - Gets all users from database
+     * getAllUsers - Gets all users from database (DAO implementation)
      * 
      * Returns: List of all User objects
      */
-    public static List<User> getAllUsers() {
+    @Override
+    public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String query = "SELECT * FROM users";
         
@@ -117,7 +142,8 @@ public class UserRepositoryImpl {
      * 
      * Returns: User object or null
      */
-    public static User getUserById(int userId) {
+    @Override
+    public User getUserById(int userId) {
         String query = "SELECT * FROM users WHERE user_id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -151,7 +177,8 @@ public class UserRepositoryImpl {
      * Used for login and registration validation.
      * Returns: User object or null
      */
-    public static User getUserByEmail(String email) {
+    @Override
+    public User getUserByEmail(String email) {
         String query = "SELECT * FROM users WHERE email = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -184,7 +211,8 @@ public class UserRepositoryImpl {
      * 
      * Sets the userId on the object after insertion.
      */
-    public static void addUser(User user) {
+    @Override
+    public void addUser(User user) {
         // Try with theatre_id column first
         try {
             String query = "INSERT INTO users (name, email, phone, password, role, theatre_id) VALUES (?, ?, ?, ?, ?, ?)";
@@ -240,7 +268,8 @@ public class UserRepositoryImpl {
     /*
      * updateUser - Updates user information
      */
-    public static void updateUser(int userId, User user) {
+    @Override
+    public void updateUser(int userId, User user) {
         try {
             String query = "UPDATE users SET name = ?, email = ?, phone = ?, password = ?, role = ?, theatre_id = ? WHERE user_id = ?";
             
@@ -293,7 +322,8 @@ public class UserRepositoryImpl {
     /*
      * updateProfile - Updates name, phone, password only
      */
-    public static void updateProfile(User user) {
+    @Override
+    public void updateProfile(User user) {
         String query = "UPDATE users SET name = ?, phone = ?, password = ? WHERE user_id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -319,7 +349,7 @@ public class UserRepositoryImpl {
     /*
      * updateUserTheatre - Updates theatre assignment
      */
-    public static void updateUserTheatre(int userId, int theatreId) {
+    public void updateUserTheatre(int userId, int theatreId) {
         String query = "UPDATE users SET theatre_id = ? WHERE user_id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -335,9 +365,42 @@ public class UserRepositoryImpl {
     }
 
     /*
-     * removeUser - Deletes user from database
+     * authenticate - Authenticates user by email and password
      */
-    public static void removeUser(int userId) {
+    @Override
+    public User authenticate(String email, String password) {
+        String query = "SELECT * FROM users WHERE email = ? AND password = ?";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                User user = new User(
+                    rs.getInt("user_id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("password"),
+                    rs.getString("role")
+                );
+                user.setTheatreId(getTheatreIdSafe(rs));
+                return user;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error authenticating user: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /*
+     * deleteUser - Deletes user from database (DAO implementation)
+     */
+    @Override
+    public void deleteUser(int userId) {
         String query = "DELETE FROM users WHERE user_id = ?";
         
         try (Connection conn = DBConnection.getConnection();

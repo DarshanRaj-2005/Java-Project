@@ -5,13 +5,18 @@
  * OOPS CONCEPTS USED:
  * - Interface: Defines contract for user operations
  * - Abstraction: Hides implementation details
- * - Author Tamil Kumar
  * 
  * Note: Implementation is in UserRepositoryImpl.
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.dao;
 
 import java.util.List;
+
 import org.expleo.TicketBookingJavaProject.model.User;
 
 /*

@@ -4,8 +4,12 @@
  * 
  * OOPS CONCEPTS USED:
  * - Inheritance: Extends CustomException
- * - Author Tamil Kumar
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.exception;
 
 /*

@@ -6,8 +6,15 @@
  * - Encapsulation: All fields are private, accessed through getter/setter methods
  * - Inheritance: This class is the parent for Customer and Administrator classes
  * - Abstraction: Hides user details complexity, provides simple interface via getters
- * - Author Tamil Kumar
  */
+
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
 /*

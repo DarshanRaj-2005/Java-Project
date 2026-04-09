@@ -5,8 +5,6 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields
  * - Abstraction: Simple payment interface
- * - Author Tamil Kumar
- * 
  * 
  * WHAT THIS FILE DOES:
  * - Validates card details
@@ -18,11 +16,17 @@
  * - UPI (user@bank format)
  * - Cash (only for Officers/Admins)
  */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.service;
 
-import org.expleo.TicketBookingJavaProject.model.Payment;
-import org.expleo.TicketBookingJavaProject.exception.PaymentErrorException;
 import java.util.Random;
+
+import org.expleo.TicketBookingJavaProject.exception.PaymentErrorException;
+import org.expleo.TicketBookingJavaProject.model.Payment;
 
 /*
  * Service class for payment operations.
