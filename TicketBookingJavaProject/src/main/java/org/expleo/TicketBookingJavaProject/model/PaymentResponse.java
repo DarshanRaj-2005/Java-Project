@@ -1,6 +1,7 @@
 package org.expleo.TicketBookingJavaProject.model;
 
 /*
+ * @author Tamil Kumar
  * PaymentResponse Model Class
  * Represents the response received after payment processing
  * Contains transaction details and payment status
