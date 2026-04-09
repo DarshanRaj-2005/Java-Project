@@ -1,33 +1,61 @@
+/*
+ * FILE: SeatRepositoryImpl.java
+ * PURPOSE: Handles all seat database operations.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Data Access Object (DAO) Pattern
+ * - Encapsulation: Pricing logic is hidden
+ * 
+ * WHAT THIS FILE DOES:
+ * - Creates seat layout for sessions
+ * - Gets available/booked seats
+ * - Updates seat status
+ * 
+ * SEAT PRICING:
+ * - Rows A, B, C: Rs. 190 (Premium)
+ * - Rows D, E, F, G: Rs. 160 (Standard)
+ * - Rows H, I, J: Rs. 60 (Basic)
+ * 
+ * DATABASE TABLE: seats
+ */
+
+
+//------------Author Name: Rohini---------------
+
+
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.expleo.TicketBookingJavaProject.model.Seat;
+
 import org.expleo.TicketBookingJavaProject.config.DBConnection;
+import org.expleo.TicketBookingJavaProject.dao.SeatDAO;
+import org.expleo.TicketBookingJavaProject.model.Seat;
 
-/**
+/*
  * Repository implementation for Seat database operations.
- * Handles seat layout and status management.
+ * Implements SeatDAO interface for proper DAO pattern.
  */
-public class SeatRepositoryImpl {
+public class SeatRepositoryImpl implements SeatDAO {
 
-    // Tiered pricing constants
-    private static final double PRICE_PREMIUM = 190.0;  // Rows A, B, C (top 3)
+    // Pricing constants
+    private static final double PRICE_PREMIUM = 190.0;  // Rows A, B, C
     private static final double PRICE_STANDARD = 160.0; // Rows D, E, F, G
-    private static final double PRICE_BASIC = 60.0;    // Rows H, I, J (bottom)
+    private static final double PRICE_BASIC = 60.0;      // Rows H, I, J
 
-    /**
-     * Gets the price for a seat based on its row.
-     * @param row The row character (A-J)
-     * @return The price for the seat
+    /*
+     * getPriceForRow - Gets price based on row
      */
     private double getPriceForRow(char row) {
-        // Top 3 rows: A, B, C -> Rs. 190
+        // Top rows: A, B, C -> Rs. 190
         if (row >= 'A' && row <= 'C') {
             return PRICE_PREMIUM;
         }
-        // Next rows: D, E, F, G -> Rs. 160
+        // Middle rows: D, E, F, G -> Rs. 160
         else if (row >= 'D' && row <= 'G') {
             return PRICE_STANDARD;
         }
@@ -35,17 +63,16 @@ public class SeatRepositoryImpl {
         else if (row >= 'H' && row <= 'J') {
             return PRICE_BASIC;
         }
-        // Default to standard price
+        // Default
         return PRICE_STANDARD;
     }
 
-    /**
-     * Gets all seats for a session.
-     * If no seats exist, creates a 10x10 seat layout with tiered pricing.
+    /*
+     * getSeatsForSession - Gets all seats for a session (DAO implementation)
      * 
-     * @param sessionKey Session identifier (format: theatre_movie_showtime)
-     * @return List of seats
+     * If no seats exist, creates a 10x10 layout.
      */
+    @Override
     public List<Seat> getSeatsForSession(String sessionKey) {
         List<Seat> seats = new ArrayList<>();
         String query = "SELECT * FROM seats WHERE session_key = ?";
@@ -56,16 +83,16 @@ public class SeatRepositoryImpl {
             stmt.setString(1, sessionKey);
             ResultSet rs = stmt.executeQuery();
 
-            // Fetch existing seats
+            // Get existing seats
             while (rs.next()) {
                 seats.add(new Seat(rs.getInt("seat_id"), rs.getString("row_char"), rs.getInt("seat_number"),
                         rs.getString("status"), rs.getDouble("price")));
             }
 
-            // If no seats exist, create layout
+            // Create layout if none exists
             if (seats.isEmpty()) {
                 createSeatLayout(sessionKey);
-                // Fetch created seats
+                // Get created seats
                 rs = stmt.executeQuery();
                 while (rs.next()) {
                     seats.add(new Seat(rs.getInt("seat_id"), rs.getString("row_char"), rs.getInt("seat_number"),
@@ -79,13 +106,11 @@ public class SeatRepositoryImpl {
         return seats;
     }
 
-    /**
-     * Creates a 10x10 seat layout for a session with tiered pricing.
-     * Top 3 rows (A-C): Rs. 190
-     * Next 4 rows (D-G): Rs. 160
-     * Bottom 3 rows (H-J): Rs. 60
+    /*
+     * createSeatLayout - Creates 10x10 seat layout
      * 
-     * @param sessionKey Session identifier
+     * Rows: A, B, C, D, E, F, G, H, I, J
+     * Seats per row: 1 to 10
      */
     private void createSeatLayout(String sessionKey) {
         String insertQuery = "INSERT INTO seats (session_key, row_char, seat_number, status, price) VALUES (?, ?, ?, ?, ?)";
@@ -93,9 +118,8 @@ public class SeatRepositoryImpl {
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
 
-            // Create 10 rows (A-J) with 10 seats each
+            // Create 10 rows with 10 seats each
             for (char row = 'A'; row <= 'J'; row++) {
-                // Get the price for this row based on tiered pricing
                 double price = getPriceForRow(row);
                 
                 for (int num = 1; num <= 10; num++) {
@@ -114,11 +138,46 @@ public class SeatRepositoryImpl {
         }
     }
 
-    /**
-     * Updates seat information in the database.
-     * 
-     * @param seat Seat object with updated information
+    /*
+     * getSeatByLabel - Gets seat by label (DAO implementation)
      */
+    @Override
+    public Seat getSeatByLabel(String sessionKey, String seatLabel) {
+        String query = "SELECT * FROM seats WHERE session_key = ? AND row_char = ? AND seat_number = ?";
+        
+        try (Connection conn = DBConnection.getConnection(); 
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            String[] parts = seatLabel.split("(?<=\\D)(?=\\d)");
+            if (parts.length == 2) {
+                stmt.setString(1, sessionKey);
+                stmt.setString(2, parts[0]);
+                stmt.setInt(3, Integer.parseInt(parts[1]));
+                
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return new Seat(rs.getInt("seat_id"), rs.getString("row_char"), rs.getInt("seat_number"),
+                            rs.getString("status"), rs.getDouble("price"));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching seat by label: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /*
+     * initializeSeats - Creates seats for new session (DAO implementation)
+     */
+    @Override
+    public void initializeSeats(String sessionKey) {
+        createSeatLayout(sessionKey);
+    }
+
+    /*
+     * updateSeat - Updates seat status
+     */
+    @Override
     public void updateSeat(Seat seat) {
         String query = "UPDATE seats SET status = ?, price = ? WHERE seat_id = ?";
 

@@ -1,28 +1,60 @@
+/*
+ * FILE: Seat.java
+ * PURPOSE: Represents a single seat in a theatre.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private, accessed through methods
+ * - Abstraction: Hides seat management complexity
+ * 
+ * HOW IT'S USED:
+ * - Created when a session starts (theatre + movie + showtime)
+ * - Updated when seat status changes (AVAILABLE -> BOOKED)
+ * - Used to show seat layout to users
+ */
+
+
+//------------Author Name: Rohini---------------
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
-/**
- * Model class representing a Seat.
- * Contains information about a seat in a theatre.
+/*
+ * WHAT THIS CLASS DOES:
+ * Represents one seat in a theatre.
+ * Seats are organized in rows (A, B, C, etc.) and numbers (1, 2, 3, etc.).
+ * 
+ * SEAT LABEL EXAMPLE: "A5" means Row A, Seat Number 5
+ * 
+ * SEAT STATUS:
+ * - "AVAILABLE": Seat can be booked
+ * - "BOOKED": Seat is already taken
  */
 public class Seat {
 
-    // Unique seat ID
+    // Database ID for this seat
     private int seatId;
     
-    // Row letter (A, B, C, etc.)
+    // Row letter (A, B, C, D, E, F, G, H, I, J)
     private String row;
     
-    // Seat number in the row
+    // Seat number in the row (1 to 10)
     private int number;
     
-    // Status (AVAILABLE, BOOKED)
+    // Status: "AVAILABLE" or "BOOKED"
     private String status;
     
-    // Price of the seat
+    // Price of this seat (based on row)
     private double price;
 
-    /**
-     * Constructor to initialize seat.
+    /*
+     * Constructor - Creates a new Seat object
+     * 
+     * Parameters:
+     * - seatId: Database ID
+     * - row: Row letter (A-J)
+     * - number: Seat number (1-10)
+     * - status: AVAILABLE or BOOKED
+     * - price: Price of the seat
      */
     public Seat(int seatId, String row, int number, String status, double price) {
         this.seatId = seatId;
@@ -34,36 +66,50 @@ public class Seat {
 
     // Getter and Setter methods
     public int getSeatId() { 
-    	return seatId; 
+        return seatId; 
     }
+    
     public String getRow() { 
-    	return row; 
+        return row; 
     }
+    
     public int getNumber() { 
-    	return number; 
+        return number; 
     }
+    
     public String getStatus() { 
-    	return status; 
+        return status; 
     }
+    
     public void setStatus(String status) { 
-    	this.status = status; 
+        this.status = status; 
     }
+    
     public double getPrice() { 
-    	return price; 
+        return price; 
     }
+    
     public void setPrice(double price) { 
-    	this.price = price; 
+        this.price = price; 
     }
 
-    /**
-     * Gets the seat label (e.g., "A1", "B5").
+    /*
+     * getSeatLabel - Combines row and number to form seat label
+     * 
+     * Returns: "A1", "B5", "J10", etc.
+     * 
+     * Example:
+     * Seat seat = new Seat(1, "A", 1, "AVAILABLE", 190.0);
+     * seat.getSeatLabel(); // Returns "A1"
      */
     public String getSeatLabel() {
         return row + number;
     }
 
-    /**
-     * String representation of seat.
+    /*
+     * toString - Converts seat to readable text
+     * 
+     * Example output: "A1 - AVAILABLE - Rs. 190.0"
      */
     @Override
     public String toString() {

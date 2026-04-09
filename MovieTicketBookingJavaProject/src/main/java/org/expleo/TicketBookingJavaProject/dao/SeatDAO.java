@@ -1,42 +1,35 @@
+/*
+ * FILE: SeatDAO.java
+ * PURPOSE: Interface for seat database operations.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Interface: Defines contract for seat operations
+ */
+
+
+//------------Author Name: Rohini---------------
+
+
 package org.expleo.TicketBookingJavaProject.dao;
 
 import java.util.List;
+
 import org.expleo.TicketBookingJavaProject.model.Seat;
 
-/**
- * Data Access Object interface for Seat operations. Defines the contract for
- * seat-related database operations.
+/*
+ * Data Access Object interface for Seat operations.
  */
 public interface SeatDAO {
 
-	/**
-	 * Retrieves all seats for a specific session.
-	 * 
-	 * @param sessionKey The session identifier (format: theatre_movie_showtime)
-	 * @return List of all seats for the session
-	 */
-	List<Seat> getSeatsForSession(String sessionKey);
+    // Get seats for a session
+    List<Seat> getSeatsForSession(String sessionKey);
 
-	/**
-	 * Retrieves a seat by its label within a session.
-	 * 
-	 * @param sessionKey The session identifier
-	 * @param seatLabel  The seat label (e.g., "A1", "B5")
-	 * @return Seat object if found, null otherwise
-	 */
-	Seat getSeatByLabel(String sessionKey, String seatLabel);
+    // Get seat by label
+    Seat getSeatByLabel(String sessionKey, String seatLabel);
 
-	/**
-	 * Updates a seat's information in the database.
-	 * 
-	 * @param seat The seat object with updated information
-	 */
-	void updateSeat(Seat seat);
+    // Update seat
+    void updateSeat(Seat seat);
 
-	/**
-	 * Initializes seats for a new session.
-	 * 
-	 * @param sessionKey The session identifier
-	 */
-	void initializeSeats(String sessionKey);
+    // Create seats for new session
+    void initializeSeats(String sessionKey);
 }
