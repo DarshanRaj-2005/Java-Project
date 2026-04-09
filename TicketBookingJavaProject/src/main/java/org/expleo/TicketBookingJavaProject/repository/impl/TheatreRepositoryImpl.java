@@ -1,22 +1,50 @@
+/*
+ * FILE: TheatreRepositoryImpl.java
+ * PURPOSE: Handles all theatre database operations.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Data Access Object (DAO) Pattern
+ * - Static methods for easy access
+ * 
+ * WHAT THIS FILE DOES:
+ * - CRUD operations for theatres
+ * - Filter theatres by city
+ * - Get all cities
+ * - Assign admins to theatres
+ * 
+ * DATABASE TABLE: theatres
+ */
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
+
 package org.expleo.TicketBookingJavaProject.repository.impl;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import org.expleo.TicketBookingJavaProject.model.Theatre;
+
 import org.expleo.TicketBookingJavaProject.config.DBConnection;
+import org.expleo.TicketBookingJavaProject.dao.TheatreDAO;
+import org.expleo.TicketBookingJavaProject.model.Theatre;
 
-/**
+/*
  * Repository implementation for Theatre database operations.
- * Implements DAO pattern for theatre-related database access.
+ * Implements TheatreDAO interface for proper DAO pattern.
  */
-public class TheatreRepositoryImpl {
+public class TheatreRepositoryImpl implements TheatreDAO {
 
-    /**
-     * Retrieves all theatres from the database.
-     * @return List of all Theatre objects
+    /*
+     * getAllTheatres - Gets all theatres (DAO implementation)
      */
-    public static List<Theatre> getAllTheatres() {
+    @Override
+    public List<Theatre> getAllTheatres() {
         List<Theatre> theatres = new ArrayList<>();
         String query = "SELECT * FROM theatres";
         
@@ -40,12 +68,11 @@ public class TheatreRepositoryImpl {
         return theatres;
     }
 
-    /**
-     * Retrieves a theatre by its ID.
-     * @param id Theatre ID
-     * @return Theatre object if found, null otherwise
+    /*
+     * getTheatreById - Gets theatre by ID
      */
-    public static Theatre getTheatreById(int id) {
+    @Override
+    public Theatre getTheatreById(int id) {
         String query = "SELECT * FROM theatres WHERE id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -70,11 +97,11 @@ public class TheatreRepositoryImpl {
         return null;
     }
 
-    /**
-     * Adds a new theatre to the database.
-     * @param theatre Theatre object to add
+    /*
+     * addTheatre - Adds new theatre
      */
-    public static void addTheatre(Theatre theatre) {
+    @Override
+    public void addTheatre(Theatre theatre) {
         String query = "INSERT INTO theatres (name, city, adminId) VALUES (?, ?, ?)";
         
         try (Connection conn = DBConnection.getConnection();
@@ -86,7 +113,7 @@ public class TheatreRepositoryImpl {
             
             stmt.executeUpdate();
             
-            // Get the generated ID
+            // Get generated ID
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     theatre.setId(generatedKeys.getInt(1));
@@ -99,12 +126,11 @@ public class TheatreRepositoryImpl {
         }
     }
 
-    /**
-     * Updates a theatre's information.
-     * @param theatreId Theatre ID to update
-     * @param theatre Theatre object with new values
+    /*
+     * updateTheatre - Updates theatre information
      */
-    public static void updateTheatre(int theatreId, Theatre theatre) {
+    @Override
+    public void updateTheatre(int theatreId, Theatre theatre) {
         String query = "UPDATE theatres SET name = ?, city = ? WHERE id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -126,11 +152,11 @@ public class TheatreRepositoryImpl {
         }
     }
 
-    /**
-     * Removes a theatre from the database.
-     * @param id Theatre ID to remove
+    /*
+     * deleteTheatre - Deletes theatre (DAO implementation)
      */
-    public static void removeTheatre(int id) {
+    @Override
+    public void deleteTheatre(int id) {
         String query = "DELETE FROM theatres WHERE id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -150,12 +176,11 @@ public class TheatreRepositoryImpl {
         }
     }
 
-    /**
-     * Updates the admin ID for a theatre.
-     * @param theatreId Theatre ID
-     * @param adminId Admin user ID to assign
+    /*
+     * updateTheatreAdmin - Assigns admin to theatre
      */
-    public static void updateTheatreAdmin(int theatreId, int adminId) {
+    @Override
+    public void updateTheatreAdmin(int theatreId, int adminId) {
         String query = "UPDATE theatres SET adminId = ? WHERE id = ?";
         
         try (Connection conn = DBConnection.getConnection();
@@ -171,12 +196,11 @@ public class TheatreRepositoryImpl {
         }
     }
     
-    /**
-     * Retrieves theatres filtered by city.
-     * @param city City name to filter by
-     * @return List of theatres in the specified city
+    /*
+     * getTheatresByCity - Gets theatres in a city
      */
-    public static List<Theatre> getTheatresByCity(String city) {
+    @Override
+    public List<Theatre> getTheatresByCity(String city) {
         List<Theatre> theatres = new ArrayList<>();
         String query = "SELECT * FROM theatres WHERE city = ?";
         
@@ -202,11 +226,11 @@ public class TheatreRepositoryImpl {
         return theatres;
     }
     
-    /**
-     * Gets all unique cities from theatres table.
-     * @return List of distinct city names
+    /*
+     * getAllCities - Gets all unique cities
      */
-    public static List<String> getAllCities() {
+    @Override
+    public List<String> getAllCities() {
         List<String> cities = new ArrayList<>();
         String query = "SELECT DISTINCT city FROM theatres ORDER BY city";
         

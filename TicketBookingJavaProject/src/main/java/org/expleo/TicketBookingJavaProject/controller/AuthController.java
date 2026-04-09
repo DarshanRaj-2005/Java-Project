@@ -1,30 +1,55 @@
+/*
+ * FILE: AuthController.java
+ * PURPOSE: Handles user registration and login.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private
+ * - Abstraction: Hides validation complexity
+ * 
+ * WHAT THIS FILE DOES:
+ * - Registers new customers
+ * - Validates email and phone formats
+ * - Authenticates users during login
+ * 
+ * Only customers can self-register. Admins are created by Super Admin.
+ */
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.Scanner;
+
 import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 
-/**
- * Controller for user registration and login operations.
- * Handles customer self-registration with validation.
- */
 public class AuthController {
 
-    // Scanner for user input
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
+
+    // Scanner for reading user input
     private Scanner sc = new Scanner(System.in);
 
-    /**
-     * Registers a new customer.
-     * Customers can only be created through self-registration.
-     * Includes validation for email and phone number.
+    /* 
+     * Steps:
+     * 1. Ask for user details
+     * 2. Validate email (must contain @)
+     * 3. Validate phone (must be 10 digits)
+     * 4. Check if email already exists
+     * 5. Save to database
+     * 
+     * Only customers can use this. Admins are created by Super Admin.
      */
+    
     public void register() {
         System.out.println("\n--- CUSTOMER REGISTRATION ---");
 
         System.out.print("Enter Name: ");
         String name = sc.nextLine().trim();
         
-        // Validate name
+        // Check if name is empty
         if (name.isEmpty()) {
             System.out.println("Error: Name cannot be empty!");
             return;
@@ -36,36 +61,37 @@ public class AuthController {
         System.out.print("Enter Phone: ");
         String phone = sc.nextLine().trim();
         
-        // Validate phone number
+        // Check phone is 10 digits
         if (!isValidPhone(phone)) {
             System.out.println("Error: Phone number must be exactly 10 digits!");
             return;
         }
-        
-        // Check if phone already exists
-        // For simplicity, we skip this check as phone is not unique field
 
         System.out.print("Enter Password: ");
         String password = sc.nextLine().trim();
 
-        // Validate password
+        // Check password is not empty
         if (password.isEmpty()) {
             System.out.println("Error: Password cannot be empty!");
             return;
         }
 
-        // Create new customer
+        // Create new customer with role "Customer"
         User newUser = new User(0, name, email, phone, password, "Customer");
-        UserRepositoryImpl.addUser(newUser);
+        userDAO.addUser(newUser);
 
         System.out.println("\nRegistration Successful!");
         System.out.println("You can now login with your email and password.");
     }
 
-    /**
-     * Gets and validates email from user input.
-     * Email must contain "@" symbol.
-     * @return Valid email string
+    /*
+     * getValidEmail - Gets and validates email from user
+     * 
+     * Keeps asking until valid email is entered
+     * Checks for:
+     * - Not empty
+     * - Contains @
+     * - Not already registered
      */
     private String getValidEmail() {
         while (true) {
@@ -78,7 +104,7 @@ public class AuthController {
                 continue;
             }
             
-            // Check if email contains "@"
+            // Check if email contains @
             if (!email.contains("@")) {
                 System.out.println("Error: Email must contain '@' symbol!");
                 System.out.println("Please enter a valid email (e.g., user@example.com)");
@@ -86,7 +112,7 @@ public class AuthController {
             }
             
             // Check if email already exists
-            if (UserRepositoryImpl.getUserByEmail(email) != null) {
+            if (userDAO.getUserByEmail(email) != null) {
                 System.out.println("Error: This email is already registered!");
                 continue;
             }
@@ -95,19 +121,21 @@ public class AuthController {
         }
     }
 
-    /**
-     * Validates phone number.
-     * Phone number must be exactly 10 digits.
-     * @param phone Phone number to validate
-     * @return true if valid, false otherwise
+    /*
+     * isValidPhone - Checks if phone number is valid
+     * 
+     * Returns true if:
+     * - Phone is not null
+     * - Phone has exactly 10 characters
+     * - All characters are digits
      */
     private boolean isValidPhone(String phone) {
-        // Check if phone is exactly 10 digits
+        // Check length is 10
         if (phone == null || phone.length() != 10) {
             return false;
         }
         
-        // Check if all characters are digits
+        // Check all characters are digits
         for (int i = 0; i < phone.length(); i++) {
             if (!Character.isDigit(phone.charAt(i))) {
                 return false;
@@ -117,9 +145,16 @@ public class AuthController {
         return true;
     }
 
-    /**
-     * Authenticates a user with email and password.
-     * @return User object if credentials are valid, null otherwise
+    /*
+     * login - Authenticates user with email and password
+     * 
+     * Returns: User object if login successful, null otherwise
+     * 
+     * How it works:
+     * 1. Ask for email and password
+     * 2. Look up user by email
+     * 3. Check if password matches
+     * 4. Return user if both match
      */
     public User login() {
         System.out.println("\n--- LOGIN ---");
@@ -130,15 +165,16 @@ public class AuthController {
         System.out.print("Enter Password: ");
         String password = sc.nextLine().trim();
 
-        // Validate inputs
+        // Check inputs are not empty
         if (email.isEmpty() || password.isEmpty()) {
             System.out.println("Error: Email and Password are required!");
             return null;
         }
 
-        // Check credentials
-        User user = UserRepositoryImpl.getUserByEmail(email);
+        // Find user by email
+        User user = userDAO.getUserByEmail(email);
 
+        // Check if user exists and password matches
         if (user != null && user.getPassword().equals(password)) {
             System.out.println("\nLogin Successful! Welcome, " + user.getName() + "!");
             return user;

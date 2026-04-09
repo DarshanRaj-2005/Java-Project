@@ -1,63 +1,50 @@
+/*
+ * FILE: TheatreDAO.java
+ * PURPOSE: Interface for theatre database operations.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Interface: Defines contract for theatre operations
+ * 
+ * Note: Implementation is in TheatreRepositoryImpl.
+ */
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.dao;
 
 import java.util.List;
+
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 
-/**
- * Data Access Object interface for Theatre operations..
+/*
+ * Data Access Object interface for Theatre operations.
  * Defines the contract for theatre-related database operations.
  */
 public interface TheatreDAO {
     
-    /**
-     * Retrieves all theatres from the database.
-     * @return List of all theatres
-     */
+    // Get all theatres
     List<Theatre> getAllTheatres();
     
-    /**
-     * Retrieves a theatre by its ID.
-     * @param theatreId The unique identifier of the theatre
-     * @return Theatre object if found, null otherwise
-     */
+    // Get theatre by ID
     Theatre getTheatreById(int theatreId);
     
-    /**
-     * Adds a new theatre to the database.
-     * @param theatre The theatre object to add
-     */
+    // Add new theatre
     void addTheatre(Theatre theatre);
     
-    /**
-     * Updates an existing theatre in the database.
-     * @param theatreId The ID of the theatre to update
-     * @param theatre The updated theatre object
-     */
+    // Update theatre
     void updateTheatre(int theatreId, Theatre theatre);
     
-    /**
-     * Deletes a theatre from the database.
-     * @param theatreId The ID of the theatre to delete
-     */
+    // Delete theatre
     void deleteTheatre(int theatreId);
     
-    /**
-     * Retrieves theatres by city.
-     * @param city The city name to filter by
-     * @return List of theatres in the specified city
-     */
+    // Get theatres by city
     List<Theatre> getTheatresByCity(String city);
     
-    /**
-     * Gets all unique cities from theatres.
-     * @return List of city names
-     */
+    // Get all cities
     List<String> getAllCities();
     
-    /**
-     * Updates the admin ID for a theatre.
-     * @param theatreId The theatre ID
-     * @param adminId The admin user ID to assign
-     */
+    // Assign admin to theatre
     void updateTheatreAdmin(int theatreId, int adminId);
 }

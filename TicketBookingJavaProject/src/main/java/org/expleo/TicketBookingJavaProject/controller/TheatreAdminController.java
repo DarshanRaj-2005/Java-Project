@@ -1,36 +1,55 @@
+/*
+ * FILE: TheatreAdminController.java
+ * PURPOSE: Handles Theatre Admin operations.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: Private fields
+ * - Composition: Uses MovieController
+ * 
+ * WHAT THIS FILE DOES:
+ * - Add, update, delete movies in their theatre
+ * - Create officers for their theatre
+ * - View movies in their theatre
+ * 
+ * WHO USES THIS:
+ * - Theatre Admin only (role: "Theatre Admin")
+ * 
+ * NOTE: Theatre Admin can only manage movies in their assigned theatre.
+ */
+
+
+//------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.Scanner;
-import org.expleo.TicketBookingJavaProject.model.User;
-import org.expleo.TicketBookingJavaProject.model.Theatre;
-import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-/**
- * Controller for Theatre Admin operations.
- * Theatre admins can manage movies and create officers.
- */
+import org.expleo.TicketBookingJavaProject.model.Theatre;
+import org.expleo.TicketBookingJavaProject.model.User;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
+
 public class TheatreAdminController {
+
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
+    private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
 
     // Scanner for user input
     private Scanner sc = new Scanner(System.in);
     
-    // Reference to MovieController
+    // Reference to MovieController (for movie operations)
     private MovieController movieController;
 
-    /**
-     * Constructor to initialize dependencies.
+    /*
+     * Constructor - Sets up the controller
      */
     public TheatreAdminController(MovieController movieController) {
         this.movieController = movieController;
     }
 
-    /**
-     * Validates email format.
-     * Email must contain "@" symbol.
-     * @param email Email to validate
-     * @return true if valid, false otherwise
+    /*
+     * isValidEmail - Checks if email contains @
      */
     private boolean isValidEmail(String email) {
         if (email == null || email.isEmpty()) {
@@ -39,11 +58,8 @@ public class TheatreAdminController {
         return email.contains("@");
     }
 
-    /**
-     * Validates phone number.
-     * Phone number must be exactly 10 digits.
-     * @param phone Phone number to validate
-     * @return true if valid, false otherwise
+    /*
+     * isValidPhone - Checks if phone is 10 digits
      */
     private boolean isValidPhone(String phone) {
         if (phone == null || phone.length() != 10) {
@@ -57,13 +73,14 @@ public class TheatreAdminController {
         return true;
     }
 
-    /**
-     * Creates a new officer for the theatre.
-     * Officer is linked to the Theatre Admin's theatre.
+    /*
+     * createOfficer - Creates an officer for the theatre
+     * 
+     * Officer can only book tickets for this theatre.
      */
     public void createOfficer(User adminUser) {
-        // Get the theatre assigned to this admin
-        Theatre theatre = TheatreRepositoryImpl.getAllTheatres().stream()
+        // Find theatre this admin manages
+        Theatre theatre = theatreDAO.getAllTheatres().stream()
             .filter(t -> t.getAdminId() == adminUser.getUserId())
             .findFirst().orElse(null);
         
@@ -86,14 +103,13 @@ public class TheatreAdminController {
         System.out.print("Enter Email: ");
         String email = sc.nextLine().trim();
         
-        // Validate email
         if (!isValidEmail(email)) {
             System.out.println("Error: Email must contain '@' symbol!");
             return;
         }
         
-        // Check if email already exists
-        if (UserRepositoryImpl.getUserByEmail(email) != null) {
+        // Check if email exists
+        if (userDAO.getUserByEmail(email) != null) {
             System.out.println("Error: Email already exists!");
             return;
         }
@@ -101,7 +117,6 @@ public class TheatreAdminController {
         System.out.print("Enter Phone (10 digits): ");
         String phone = sc.nextLine().trim();
         
-        // Validate phone
         if (!isValidPhone(phone)) {
             System.out.println("Error: Phone number must be exactly 10 digits!");
             return;
@@ -110,7 +125,6 @@ public class TheatreAdminController {
         System.out.print("Enter Password: ");
         String password = sc.nextLine().trim();
 
-        // Validate password
         if (password.isEmpty()) {
             System.out.println("Error: Password cannot be empty!");
             return;
@@ -119,37 +133,26 @@ public class TheatreAdminController {
         // Create officer with theatre assignment
         User officer = new User(0, name, email, phone, password, "Officer");
         officer.setTheatreId(theatre.getId());
-        UserRepositoryImpl.addUser(officer);
+        userDAO.addUser(officer);
         
         System.out.println("\nOfficer '" + name + "' created successfully!");
         System.out.println("Assigned to: " + theatre.getName() + " (" + theatre.getCity() + ")");
         System.out.println("This officer can only book tickets for this theatre.");
     }
 
-    /**
-     * Adds a movie to the theatre.
-     */
+    // Movie management methods - delegate to MovieController
     public void addMovie(User adminUser) {
         movieController.addMovie(adminUser);
     }
 
-    /**
-     * Updates a movie in the theatre.
-     */
     public void updateMovie(User adminUser) {
         movieController.updateMovie(adminUser);
     }
 
-    /**
-     * Deletes a movie from the theatre.
-     */
     public void deleteMovie(User adminUser) {
         movieController.deleteMovie(adminUser);
     }
 
-    /**
-     * Views movies in the theatre.
-     */
     public void viewMovies(User adminUser) {
         movieController.viewMovies(adminUser);
     }
