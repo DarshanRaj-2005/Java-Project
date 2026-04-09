@@ -1,7 +1,7 @@
 /*
  * FILE: MovieController.java
  * PURPOSE: Handles all movie-related operations.
- * AUTHOR: KRISHNAPRASATH B
+ * 
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields, public methods
  * - Abstraction: Simple interface for movie operations
@@ -17,9 +17,19 @@
  * - Theatre Admin (to manage their theatre's movies)
  * - Customers (to view available movies)
  */
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
 import org.expleo.TicketBookingJavaProject.model.Movie;
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 import org.expleo.TicketBookingJavaProject.model.User;
@@ -27,11 +37,10 @@ import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-/*
- * Controller for movie-related operations.
- * Handles adding, updating, deleting, and viewing movies.
- */
 public class MovieController {
+
+    private MovieRepositoryImpl movieDAO = new MovieRepositoryImpl();
+    private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
 
     // Scanner for user input
     private Scanner sc = new Scanner(System.in);
@@ -42,7 +51,7 @@ public class MovieController {
      * Returns: Theatre object if found, null if admin has no theatre
      */
     private Theatre getAdminTheatre(User adminUser) {
-        List<Theatre> theatres = TheatreRepositoryImpl.getAllTheatres();
+        List<Theatre> theatres = theatreDAO.getAllTheatres();
         for (Theatre t : theatres) {
             if (t.getAdminId() == adminUser.getUserId()) {
                 return t;
@@ -70,7 +79,7 @@ public class MovieController {
         String id = sc.nextLine().trim();
 
         // Check if movie ID already exists
-        if (MovieRepositoryImpl.getMovieById(id) != null) {
+        if (movieDAO.getMovieById(id) != null) {
             System.out.println("Error: Movie with this ID already exists!");
             return;
         }
@@ -96,7 +105,7 @@ public class MovieController {
 
         // Save movie to database
         Movie movie = new Movie(id, title, genre, language, duration, releaseDate, theatre.getId());
-        MovieRepositoryImpl.addMovie(movie);
+        movieDAO.addMovie(movie);
     }
 
     /*
@@ -115,7 +124,7 @@ public class MovieController {
         // Show movies in this theatre
         viewMovies(adminUser);
 
-        List<Movie> theatreMovies = MovieRepositoryImpl.getMoviesByTheatre(theatre.getId());
+        List<Movie> theatreMovies = movieDAO.getMoviesByTheatre(theatre.getId());
         if (theatreMovies.isEmpty()) {
             System.out.println("No movies available to update.");
             return;
@@ -165,7 +174,7 @@ public class MovieController {
 
         // Save updated movie
         Movie newMovie = new Movie(oldMovie.getId(), title, genre, language, duration, rd, oldMovie.getTheatreId());
-        MovieRepositoryImpl.updateMovie(oldMovie.getId(), newMovie);
+        movieDAO.updateMovie(oldMovie.getId(), newMovie);
     }
 
     /*
@@ -183,7 +192,7 @@ public class MovieController {
         // Show movies in this theatre
         viewMovies(adminUser);
 
-        List<Movie> theatreMovies = MovieRepositoryImpl.getMoviesByTheatre(theatre.getId());
+        List<Movie> theatreMovies = movieDAO.getMoviesByTheatre(theatre.getId());
         if (theatreMovies.isEmpty()) {
             System.out.println("No movies available to delete.");
             return;
@@ -204,7 +213,7 @@ public class MovieController {
         String confirm = sc.nextLine().trim().toLowerCase();
         
         if (confirm.equals("yes")) {
-            MovieRepositoryImpl.deleteMovie(movieToDelete.getId());
+            movieDAO.deleteMovie(movieToDelete.getId());
         } else {
             System.out.println("Deletion cancelled.");
         }
@@ -221,7 +230,7 @@ public class MovieController {
         }
         
         System.out.println("\n--- MOVIE LIST FOR " + theatre.getName().toUpperCase() + " ---");
-        List<Movie> theatreMovies = MovieRepositoryImpl.getMoviesByTheatre(theatre.getId());
+        List<Movie> theatreMovies = movieDAO.getMoviesByTheatre(theatre.getId());
 
         if (theatreMovies.isEmpty()) {
             System.out.println("No Movies Available in this theatre.");
@@ -241,7 +250,7 @@ public class MovieController {
      */
     public void viewMovies() {
         System.out.println("\n--- ALL AVAILABLE MOVIES ---");
-        List<Movie> movies = MovieRepositoryImpl.getAllMovies();
+        List<Movie> movies = movieDAO.getAllMovies();
 
         if (movies.isEmpty()) {
             System.out.println("No Movies Available.");
@@ -268,14 +277,14 @@ public class MovieController {
      * Used by SearchController
      */
     public List<Movie> getMovies() {
-        return MovieRepositoryImpl.getAllMovies();
+        return movieDAO.getAllMovies();
     }
     
     /*
      * getMoviesForTheatre - Returns movies for a specific theatre
      */
     public List<Movie> getMoviesForTheatre(int theatreId) {
-        return MovieRepositoryImpl.getMoviesByTheatre(theatreId);
+        return movieDAO.getMoviesByTheatre(theatreId);
     }
     
     /*
@@ -284,7 +293,7 @@ public class MovieController {
      * Used by Officers
      */
     public void viewMoviesForTheatre(int theatreId) {
-        List<Movie> movies = MovieRepositoryImpl.getMoviesByTheatre(theatreId);
+        List<Movie> movies = movieDAO.getMoviesByTheatre(theatreId);
 
         if (movies.isEmpty()) {
             System.out.println("No Movies Available.");

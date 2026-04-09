@@ -1,7 +1,7 @@
 /*
  * FILE: TheatreAdminController.java
  * PURPOSE: Handles Theatre Admin operations.
- * AUTHOR: KRISHNAPRASATH B
+ * 
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields
  * - Composition: Uses MovieController
@@ -16,20 +16,24 @@
  * 
  * NOTE: Theatre Admin can only manage movies in their assigned theatre.
  */
+
+
+//------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.Scanner;
-import org.expleo.TicketBookingJavaProject.model.User;
-import org.expleo.TicketBookingJavaProject.model.Theatre;
-import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-/*
- * Controller for Theatre Admin operations.
- * Theatre admins can manage movies and create officers.
- */
+import org.expleo.TicketBookingJavaProject.model.Theatre;
+import org.expleo.TicketBookingJavaProject.model.User;
+import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
+import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
+
 public class TheatreAdminController {
+
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
+    private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
 
     // Scanner for user input
     private Scanner sc = new Scanner(System.in);
@@ -76,7 +80,7 @@ public class TheatreAdminController {
      */
     public void createOfficer(User adminUser) {
         // Find theatre this admin manages
-        Theatre theatre = TheatreRepositoryImpl.getAllTheatres().stream()
+        Theatre theatre = theatreDAO.getAllTheatres().stream()
             .filter(t -> t.getAdminId() == adminUser.getUserId())
             .findFirst().orElse(null);
         
@@ -105,7 +109,7 @@ public class TheatreAdminController {
         }
         
         // Check if email exists
-        if (UserRepositoryImpl.getUserByEmail(email) != null) {
+        if (userDAO.getUserByEmail(email) != null) {
             System.out.println("Error: Email already exists!");
             return;
         }
@@ -129,7 +133,7 @@ public class TheatreAdminController {
         // Create officer with theatre assignment
         User officer = new User(0, name, email, phone, password, "Officer");
         officer.setTheatreId(theatre.getId());
-        UserRepositoryImpl.addUser(officer);
+        userDAO.addUser(officer);
         
         System.out.println("\nOfficer '" + name + "' created successfully!");
         System.out.println("Assigned to: " + theatre.getName() + " (" + theatre.getCity() + ")");

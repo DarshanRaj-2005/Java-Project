@@ -1,7 +1,7 @@
 /*
  * FILE: SuperAdminController.java
  * PURPOSE: Handles Super Admin operations.
- * AUTHOR: KRISHNAPRASATH B
+ * 
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields and methods
  * - Abstraction: Simple interface for admin operations
@@ -19,22 +19,27 @@
  * - Email: admin@gmail.com
  * - Password: admin123
  */
+
+
+//------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.controller;
 
-import java.util.Scanner;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
+
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-/*
- * Controller for Super Admin operations.
- * Handles theatre and theatre admin management.
- */
 public class SuperAdminController {
+
+    private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
 
     // Scanner for user input
     private Scanner sc = new Scanner(System.in);
@@ -82,7 +87,7 @@ public class SuperAdminController {
         }
 
         Theatre theatre = new Theatre(0, name, city);
-        TheatreRepositoryImpl.addTheatre(theatre);
+        theatreDAO.addTheatre(theatre);
         
         System.out.println("\nTheatre '" + name + "' created successfully in " + city + "!");
         System.out.println("Note: Please create a Theatre Admin and assign them to this Theatre.");
@@ -133,14 +138,14 @@ public class SuperAdminController {
         }
 
         // Check if email exists
-        if (UserRepositoryImpl.getUserByEmail(email) != null) {
+        if (userDAO.getUserByEmail(email) != null) {
             System.out.println("Error: Email already exists!");
             return;
         }
 
         // Create user
         User admin = new User(0, name, email, phone, password, "Theatre Admin");
-        UserRepositoryImpl.addUser(admin);
+        userDAO.addUser(admin);
 
         System.out.println("\nTheatre Admin '" + name + "' created successfully!");
         
@@ -152,7 +157,7 @@ public class SuperAdminController {
      * assignTheatreToAdmin - Assigns a theatre to an admin
      */
     private void assignTheatreToAdmin(User admin) {
-        List<String> cities = TheatreRepositoryImpl.getAllCities();
+        List<String> cities = theatreDAO.getAllCities();
         
         if (cities.isEmpty()) {
             System.out.println("\nNo theatres in system yet. Admin created but unassigned.");
@@ -177,7 +182,7 @@ public class SuperAdminController {
         String selectedCity = cities.get(cityChoice - 1);
         
         // Get theatres in selected city
-        List<Theatre> cityTheatres = TheatreRepositoryImpl.getTheatresByCity(selectedCity);
+        List<Theatre> cityTheatres = theatreDAO.getTheatresByCity(selectedCity);
         
         System.out.println("\nTheatres in " + selectedCity + ":");
         for (int i = 0; i < cityTheatres.size(); i++) {
@@ -208,7 +213,7 @@ public class SuperAdminController {
 
         // Assign admin to theatre
         selected.setAdminId(admin.getUserId());
-        TheatreRepositoryImpl.updateTheatreAdmin(selected.getId(), admin.getUserId());
+        theatreDAO.updateTheatreAdmin(selected.getId(), admin.getUserId());
         System.out.println("Success! Admin '" + admin.getName() + "' assigned to '" + selected.getName() + "'.");
     }
 
@@ -218,7 +223,7 @@ public class SuperAdminController {
     public void removeTheatre() {
         System.out.println("\n--- REMOVE THEATRE ---");
         
-        List<Theatre> theatres = TheatreRepositoryImpl.getAllTheatres();
+        List<Theatre> theatres = theatreDAO.getAllTheatres();
         if (theatres.isEmpty()) {
             System.out.println("No theatres found.");
             return;
@@ -238,7 +243,7 @@ public class SuperAdminController {
         String confirm = sc.nextLine().trim().toLowerCase();
         
         if (confirm.equals("yes")) {
-            TheatreRepositoryImpl.removeTheatre(id);
+            theatreDAO.deleteTheatre(id);
         } else {
             System.out.println("Removal cancelled.");
         }
@@ -251,7 +256,7 @@ public class SuperAdminController {
         System.out.println("\n--- REMOVE THEATRE ADMIN ---");
         
         // Get all theatre admins
-        List<User> admins = UserRepositoryImpl.getAllUsers().stream()
+        List<User> admins = userDAO.getAllUsers().stream()
             .filter(u -> u.getRole().equals("Theatre Admin"))
             .collect(Collectors.toList());
         
@@ -277,7 +282,7 @@ public class SuperAdminController {
         String confirm = sc.nextLine().trim().toLowerCase();
         
         if (confirm.equals("yes")) {
-            UserRepositoryImpl.removeUser(id);
+            userDAO.deleteUser(id);
         } else {
             System.out.println("Removal cancelled.");
         }
@@ -289,7 +294,7 @@ public class SuperAdminController {
     public void viewTheatres() {
         System.out.println("\n--- THEATRE LIST ---");
         
-        List<Theatre> theatres = TheatreRepositoryImpl.getAllTheatres();
+        List<Theatre> theatres = theatreDAO.getAllTheatres();
         if (theatres.isEmpty()) {
             System.out.println("No theatres found.");
             return;
@@ -297,7 +302,7 @@ public class SuperAdminController {
 
         for (Theatre t : theatres) {
             String adminName = "Not Assigned";
-            User admin = UserRepositoryImpl.getAllUsers().stream()
+            User admin = userDAO.getAllUsers().stream()
                 .filter(u -> u.getUserId() == t.getAdminId())
                 .findFirst().orElse(null);
             if (admin != null) {

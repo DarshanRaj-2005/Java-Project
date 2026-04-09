@@ -1,15 +1,21 @@
 /*
  * FILE: TheatreDAO.java
  * PURPOSE: Interface for theatre database operations.
- * AUTHOR: KRISHNAPRASATH B
+ * 
  * OOPS CONCEPTS USED:
  * - Interface: Defines contract for theatre operations
  * 
  * Note: Implementation is in TheatreRepositoryImpl.
  */
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.dao;
 
 import java.util.List;
+
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 
 /*

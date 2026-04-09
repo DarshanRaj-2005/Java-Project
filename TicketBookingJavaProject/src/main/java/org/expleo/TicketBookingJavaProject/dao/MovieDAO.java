@@ -1,15 +1,21 @@
 /*
  * FILE: MovieDAO.java
  * PURPOSE: Interface for movie database operations.
- * AUTHOR: KRISHNAPRASATH B
+ * 
  * OOPS CONCEPTS USED:
  * - Interface: Defines contract for movie operations
  * 
  * Note: Implementation is in MovieRepositoryImpl.
  */
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
 package org.expleo.TicketBookingJavaProject.dao;
 
 import java.util.List;
+
 import org.expleo.TicketBookingJavaProject.model.Movie;
 
 /*
