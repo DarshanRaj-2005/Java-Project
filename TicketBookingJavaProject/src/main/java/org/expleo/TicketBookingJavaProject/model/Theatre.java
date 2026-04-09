@@ -1,34 +1,61 @@
+/*
+ * FILE: Theatre.java
+ * PURPOSE: Stores theatre information like name, city, and admin assignment.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private, accessed through getters/setters
+ * - Abstraction: Hides theatre details, provides simple interface
+ * 
+ * HOW IT'S USED:
+ * - Created when Super Admin adds a new theatre
+ * - Used to show theatres to users
+ * - Links to Theatre Admin who manages it
+ */
+
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
-/**
- * Model class representing a Theatre.
- * Contains information about theatres including name, city, and admin assignment.
+/*
+ * WHAT THIS CLASS DOES:
+ * Represents a movie theatre/cinema.
+ * Each theatre has a name, city, and an admin who manages it.
+ * 
+ * EXAMPLE:
+ * Theatre theatre = new Theatre(1, "PVR Cinemas", "Chennai");
+ * theatre.setAdminId(5); // Assign admin with userId 5
  */
 public class Theatre {
 
-    // Unique identifier
+    // Unique ID for the theatre (1, 2, 3, etc.)
     private int id;
     
-    // Theatre name
+    // Name of the theatre (like "PVR Cinemas", "INOX")
     private String name;
     
-    // City where theatre is located
+    // City where the theatre is located
     private String city;
     
-    // Admin user ID (0 if no admin assigned)
+    // ID of the admin who manages this theatre (0 = no admin assigned)
     private int adminId;
 
-    /**
-     * Constructor to initialize theatre.
-     * @param id Theatre ID
-     * @param name Theatre name
-     * @param city City name
+    /*
+     * Constructor - Creates a new Theatre object
+     * 
+     * Parameters:
+     * - id: Theatre ID (0 for new theatres, database assigns the real ID)
+     * - name: Theatre name
+     * - city: City name
      */
     public Theatre(int id, String name, String city) {
         this.id = id;
         this.name = name;
         this.city = city;
-        this.adminId = 0; // Default: no admin assigned
+        this.adminId = 0; // Default: no admin yet
     }
 
     // Getter and Setter methods
@@ -44,8 +71,10 @@ public class Theatre {
     public int getAdminId() { return adminId; }
     public void setAdminId(int adminId) { this.adminId = adminId; }
 
-    /**
-     * String representation of theatre.
+    /*
+     * toString - Converts theatre to readable text
+     * 
+     * Example output: "1. PVR Cinemas (Chennai)"
      */
     @Override
     public String toString() {

@@ -1,34 +1,66 @@
+/*
+ * FILE: Movie.java
+ * PURPOSE: Stores movie information like title, genre, language, duration, etc.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private, accessed through getter methods
+ * - Abstraction: Shows only movie details, hides internal complexity
+ * 
+ * HOW IT'S USED:
+ * - Created when adding a new movie to a theatre
+ * - Retrieved when displaying movie list to users
+ * - Used in search results
+ */
 package org.expleo.TicketBookingJavaProject.model;
 
-/**
- * Model class representing a Movie.
- * Contains all information about a movie.
+/*
+ * WHAT THIS CLASS DOES:
+ * Holds all information about a single movie.
+ * Each movie belongs to a specific theatre.
+ * 
+ * EXAMPLE:
+ * Movie movie = new Movie("M001", "Baahubali", "Action", "Telugu", 180, "2024-01-15", 1);
  */
+
+
+
+//------------Author Name: Krishna Prasath---------------
+
+
 public class Movie {
 
-    // Unique identifier for the movie
+    // Movie's unique ID (like "M001")
     private String id;
     
-    // Title of the movie
+    // Movie title (like "Baahubali")
     private String title;
     
-    // Genre (Action, Comedy, Drama, etc.)
+    // Movie genre (like "Action", "Comedy", "Drama")
     private String genre;
     
-    // Language (Tamil, English, Hindi, etc.)
+    // Language of the movie (like "Tamil", "English", "Hindi")
     private String language;
     
-    // Duration in minutes
+    // How long the movie runs (in minutes)
     private int duration;
     
-    // Release date (stored as String)
+    // When the movie was released (stored as text, format: YYYY-MM-DD)
     private String releaseDate;
     
-    // Theatre ID where this movie is playing
+    // Which theatre is showing this movie (links to Theatre table)
     private int theatreId;
 
-    /**
-     * Constructor to initialize all movie details.
+    /*
+     * Constructor - Creates a new Movie object
+     * 
+     * Parameters:
+     * - id: Unique movie ID
+     * - title: Movie name
+     * - genre: Type of movie
+     * - language: Language of the movie
+     * - duration: Length in minutes
+     * - releaseDate: Release date
+     * - theatreId: Which theatre shows this movie
      */
     public Movie(String id, String title, String genre, String language, int duration, String releaseDate, int theatreId) {
         this.id = id;
@@ -40,7 +72,7 @@ public class Movie {
         this.theatreId = theatreId;
     }
 
-    // Getter methods
+    // Getter methods - Read-only access to movie fields
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getGenre() { return genre; }
@@ -49,8 +81,10 @@ public class Movie {
     public String getReleaseDate() { return releaseDate; }
     public int getTheatreId() { return theatreId; }
 
-    /**
-     * String representation of movie.
+    /*
+     * toString - Converts movie to readable text
+     * 
+     * Example output: "Baahubali (Telugu) | Action | 180 mins"
      */
     @Override
     public String toString() {

@@ -5,8 +5,10 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: Simple interface
  * - Composition: Uses UserRepositoryImpl
- * - Author Tamil Kumar
+ * 
+ * Authors: Krishna Prasath
  */
+
 package org.expleo.TicketBookingJavaProject.service;
 
 import org.expleo.TicketBookingJavaProject.model.User;
@@ -17,6 +19,8 @@ import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
  * Contains business logic for user management.
  */
 public class UserService {
+
+    private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
 
     /*
      * updateProfile - Updates user profile information
@@ -42,6 +46,6 @@ public class UserService {
         }
         
         // Save to database
-        UserRepositoryImpl.updateProfile(user);
+        userDAO.updateProfile(user);
     }
 }
