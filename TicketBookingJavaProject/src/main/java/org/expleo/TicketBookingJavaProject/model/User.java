@@ -1,34 +1,70 @@
+/*
+ * FILE: User.java
+ * PURPOSE: Stores user information like name, email, phone, password, and role.
+ * 
+ * OOPS CONCEPTS USED:
+ * - Encapsulation: All fields are private, accessed through getter/setter methods
+ * - Inheritance: This class is the parent for Customer and Administrator classes
+ * - Abstraction: Hides user details complexity, provides simple interface via getters
+ */
+
+
+
+//------------Author Name: Tamil Kumar---------------
+
+
+
+
 package org.expleo.TicketBookingJavaProject.model;
 
-/**
- * Model class representing a User.
- * Base class for all user types (Super Admin, Theatre Admin, Officer, Customer).
+/*
+ * WHAT THIS CLASS DOES:
+ * This class holds all information about a user in the system.
+ * Users can be: Super Admin, Theatre Admin, Officer, or Customer.
+ * 
+ * HOW IT'S USED:
+ * - Created when a new user registers
+ * - Retrieved from database when user logs in
+ * - Updated when user changes their profile
+ * 
+ * IMPORTANT: This is the base class. Other classes like Customer and Administrator
+ * inherit from this class to add their own features.
  */
 public class User {
 
-    // User ID
+    // Stores the user's unique ID number (given by database)
     protected int userId;
     
-    // User's full name
+    // User's full name (like "John Doe")
     protected String name;
     
-    // User's email (unique)
+    // User's email address (used for login)
     protected String email;
     
-    // User's phone number
+    // User's phone number (10 digits)
     protected String phone;
     
-    // User's password
+    // User's password (stored as plain text for simplicity)
     protected String password;
     
-    // User role (Super Admin, Theatre Admin, Officer, Customer)
+    // User's role in the system: "Super Admin", "Theatre Admin", "Officer", or "Customer"
     protected String role;
     
-    // Theatre ID (for Theatre Admins and Officers)
+    // ID of the theatre this user works at (used for Theatre Admin and Officer)
     protected int theatreId;
 
-    /**
-     * Constructor to initialize user (without theatre).
+    /*
+     * Constructor - Creates a new User object
+     * 
+     * Parameters:
+     * - userId: Unique ID from database (0 for new users)
+     * - name: Full name
+     * - email: Email address
+     * - phone: Phone number (10 digits)
+     * - password: Login password
+     * - role: User role in the system
+     * 
+     * Note: theatreId defaults to 0 (no theatre assigned yet)
      */
     public User(int userId, String name, String email, String phone, String password, String role) {
         this.userId = userId;
@@ -37,10 +73,10 @@ public class User {
         this.phone = phone;
         this.password = password;
         this.role = role;
-        this.theatreId = 0; // Default: no theatre assigned
+        this.theatreId = 0;
     }
 
-    // Getter and Setter methods
+    // Getter methods - Used to read private fields
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
 

@@ -2,6 +2,10 @@ package org.expleo.TicketBookingJavaProject.util;
 
 import org.expleo.TicketBookingJavaProject.model.PaymentResponse;
 
+/**
+ * @author Tamil Kumar
+ * PaymentUtil Class
+ */
 public class PaymentUtil {
 
     public static PaymentResponse processPayment(double amount) {
