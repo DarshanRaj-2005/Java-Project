@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.expleo.TicketBookingJavaProject.exception.BookingNotFoundException;
 import org.expleo.TicketBookingJavaProject.model.BillDetails;
 import org.expleo.TicketBookingJavaProject.model.Booking;
 import org.expleo.TicketBookingJavaProject.model.Movie;
@@ -797,27 +798,36 @@ public class BookingController {
 
         try {
             Booking booking = bookingDAO.getBookingById(id);
-            if (booking != null) {
-                // Check ownership (customers only)
-                if (userId > 0 && booking.getUserId() != userId) {
-                    System.out.println("Error: You can only cancel your own bookings!");
-                    return;
-                }
-                
-                double refundAmount = booking.getTotalAmount();
-                bookingService.cancelBooking(id);
-                
-                // Show refund info
-                System.out.println("\n=================================");
-                System.out.println("      REFUND INFORMATION          ");
-                System.out.println("=================================");
-                System.out.println("Booking ID: " + id);
-                System.out.println("Amount Paid: Rs." + refundAmount);
-                System.out.println("Refund Amount: Rs." + refundAmount);
-                System.out.println("-------------------------------------------");
-                System.out.println("NOTE: Refund will be processed within 5-7 business days.");
-                System.out.println("=================================");
+
+            if (booking == null) {
+                throw new BookingNotFoundException(
+                    "Booking with ID " + id + " not found!"
+                );
             }
+
+            // Check ownership (customers only)
+            if (userId > 0 && booking.getUserId() != userId) {
+                System.out.println("Error: You can only cancel your own bookings!");
+                return;
+            }
+
+            double refundAmount = booking.getTotalAmount();
+            bookingService.cancelBooking(id);
+
+            // Show refund info
+            System.out.println("\n=================================");
+            System.out.println("      REFUND INFORMATION          ");
+            System.out.println("=================================");
+            System.out.println("Booking ID: " + id);
+            System.out.println("Amount Paid: Rs." + refundAmount);
+            System.out.println("Refund Amount: Rs." + refundAmount);
+            System.out.println("-------------------------------------------");
+            System.out.println("NOTE: Refund will be processed within 5-7 business days.");
+            System.out.println("=================================");
+
+        } catch (BookingNotFoundException e) {
+            System.out.println(e.getMessage());
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }

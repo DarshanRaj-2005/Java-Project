@@ -401,6 +401,7 @@ public class App {
 
             switch (choice) {
             case 1:
+                
                 searchController.searchMovie(false);
                 break;
             case 2:
