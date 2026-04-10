@@ -10,8 +10,8 @@ mvn clean compile exec:java
 | Role | Email | Password |
 |------|-------|----------|
 | Super Admin | admin@gmail.com | admin123 |
-| Customer | john@example.com | john123 |
-| Theatre Admin | manager@example.com | manager123 |
+| Customer | darshan@gmail.com | darshan123 |
+| Theatre Admin | roxadmin@gmail.com | roxadmin123 |
 
 ## Features
 1. **Search Options** - By Name, Language, Genre, City, Theatre
