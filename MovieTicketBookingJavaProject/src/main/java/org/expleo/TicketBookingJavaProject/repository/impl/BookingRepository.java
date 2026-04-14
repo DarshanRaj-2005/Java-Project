@@ -1,8 +1,8 @@
-package org.expleo.TicketBookingJavaProject.dao;
+package org.expleo.TicketBookingJavaProject.repository.impl;
 
 import org.expleo.TicketBookingJavaProject.model.Booking;
 
-public interface BookingDAO {
+public interface BookingRepository {
 
     boolean saveBooking(Booking booking);
 }
