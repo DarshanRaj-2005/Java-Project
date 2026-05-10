@@ -5,6 +5,8 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields
  * - Composition: Uses MovieController
+ * - Inheritance: Extends BaseController
+ * - Polymorphism: Overrides showMenu() method
  * 
  * WHAT THIS FILE DOES:
  * - Add, update, delete movies in their theatre
@@ -18,39 +20,67 @@
  */
 
 
+
 //------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
 
 
 package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.Scanner;
-
 import org.expleo.TicketBookingJavaProject.model.Theatre;
 import org.expleo.TicketBookingJavaProject.model.User;
 import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 
-public class TheatreAdminController {
+public class TheatreAdminController extends BaseController {
 
     private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
     private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
-
-    // Scanner for user input
-    private Scanner sc = new Scanner(System.in);
-    
-    // Reference to MovieController (for movie operations)
     private MovieController movieController;
 
-    /*
-     * Constructor - Sets up the controller
-     */
     public TheatreAdminController(MovieController movieController) {
+        super();
         this.movieController = movieController;
+        printInfo("TheatreAdminController initialized");
     }
 
-    /*
-     * isValidEmail - Checks if email contains @
-     */
+    public TheatreAdminController(MovieController movieController, Scanner sharedScanner) {
+        super(sharedScanner);
+        this.movieController = movieController;
+        printInfo("TheatreAdminController initialized");
+    }
+
+    @Override
+    public void showMenu() {
+        printHeader("THEATRE ADMIN");
+        System.out.println("1. Create Officer");
+        System.out.println("2. Add Movie");
+        System.out.println("3. Update Movie");
+        System.out.println("4. Delete Movie");
+        System.out.println("5. View Movies");
+        System.out.println("6. Back");
+        
+        int choice = getValidChoice(1, 6);
+        
+        switch (choice) {
+            case 1:
+                break;
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+                printInfo("Please provide admin user context for this operation.");
+                stop();
+                break;
+            case 6:
+                stop();
+                break;
+            default:
+                printError("Invalid option");
+        }
+    }
+
     private boolean isValidEmail(String email) {
         if (email == null || email.isEmpty()) {
             return false;
@@ -58,9 +88,6 @@ public class TheatreAdminController {
         return email.contains("@");
     }
 
-    /*
-     * isValidPhone - Checks if phone is 10 digits
-     */
     private boolean isValidPhone(String phone) {
         if (phone == null || phone.length() != 10) {
             return false;
@@ -73,30 +100,24 @@ public class TheatreAdminController {
         return true;
     }
 
-    /*
-     * createOfficer - Creates an officer for the theatre
-     * 
-     * Officer can only book tickets for this theatre.
-     */
     public void createOfficer(User adminUser) {
-        // Find theatre this admin manages
         Theatre theatre = theatreDAO.getAllTheatres().stream()
             .filter(t -> t.getAdminId() == adminUser.getUserId())
             .findFirst().orElse(null);
         
         if (theatre == null) {
-            System.out.println("Error: You are not assigned to any theatre!");
+            printError("You are not assigned to any theatre!");
             return;
         }
         
-        System.out.println("\n--- CREATE NEW OFFICER for " + theatre.getName() + " ---");
-        System.out.println("This officer will only be able to book tickets for " + theatre.getName() + " (" + theatre.getCity() + ")");
+        printSubHeader("CREATE NEW OFFICER for " + theatre.getName());
+        printInfo("This officer will only be able to book tickets for " + theatre.getName() + " (" + theatre.getCity() + ")");
         
         System.out.print("Enter Name: ");
         String name = sc.nextLine().trim();
         
         if (name.isEmpty()) {
-            System.out.println("Error: Name cannot be empty!");
+            printError("Name cannot be empty!");
             return;
         }
         
@@ -104,13 +125,12 @@ public class TheatreAdminController {
         String email = sc.nextLine().trim();
         
         if (!isValidEmail(email)) {
-            System.out.println("Error: Email must contain '@' symbol!");
+            printError("Email must contain '@' symbol!");
             return;
         }
         
-        // Check if email exists
         if (userDAO.getUserByEmail(email) != null) {
-            System.out.println("Error: Email already exists!");
+            printError("Email already exists!");
             return;
         }
 
@@ -118,7 +138,7 @@ public class TheatreAdminController {
         String phone = sc.nextLine().trim();
         
         if (!isValidPhone(phone)) {
-            System.out.println("Error: Phone number must be exactly 10 digits!");
+            printError("Phone number must be exactly 10 digits!");
             return;
         }
         
@@ -126,21 +146,18 @@ public class TheatreAdminController {
         String password = sc.nextLine().trim();
 
         if (password.isEmpty()) {
-            System.out.println("Error: Password cannot be empty!");
+            printError("Password cannot be empty!");
             return;
         }
 
-        // Create officer with theatre assignment
         User officer = new User(0, name, email, phone, password, "Officer");
         officer.setTheatreId(theatre.getId());
         userDAO.addUser(officer);
         
-        System.out.println("\nOfficer '" + name + "' created successfully!");
-        System.out.println("Assigned to: " + theatre.getName() + " (" + theatre.getCity() + ")");
-        System.out.println("This officer can only book tickets for this theatre.");
+        printSuccess("Officer '" + name + "' created successfully!");
+        printInfo("Assigned to: " + theatre.getName() + " (" + theatre.getCity() + ")");
     }
 
-    // Movie management methods - delegate to MovieController
     public void addMovie(User adminUser) {
         movieController.addMovie(adminUser);
     }

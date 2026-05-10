@@ -5,6 +5,9 @@
  * OOPS CONCEPTS USED:
  * - Encapsulation: Private fields and methods
  * - Abstraction: Simple interface for admin operations
+ * - Inheritance: Extends BaseController
+ * - Polymorphism: Overrides showMenu() method
+ * - Composition: Uses TheatreRepositoryImpl and UserRepositoryImpl
  * 
  * WHAT THIS FILE DOES:
  * - Create and remove theatres
@@ -21,7 +24,9 @@
  */
 
 
+
 //------------Author Name: Tamil Kumar, Krishna Prasath---------------
+
 
 
 package org.expleo.TicketBookingJavaProject.controller;
@@ -36,17 +41,57 @@ import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl
 import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-public class SuperAdminController {
+public class SuperAdminController extends BaseController {
 
     private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
     private UserRepositoryImpl userDAO = UserRepositoryImpl.getInstance();
 
-    // Scanner for user input
-    private Scanner sc = new Scanner(System.in);
+    public SuperAdminController() {
+        super();
+        printInfo("SuperAdminController initialized");
+    }
 
-    /*
-     * isValidEmail - Checks if email contains @
-     */
+    public SuperAdminController(Scanner sharedScanner) {
+        super(sharedScanner);
+        printInfo("SuperAdminController initialized");
+    }
+
+    @Override
+    public void showMenu() {
+        printHeader("SUPER ADMIN");
+        System.out.println("1. Create Theatre");
+        System.out.println("2. Create Theatre Admin");
+        System.out.println("3. View Theatres");
+        System.out.println("4. Remove Theatre");
+        System.out.println("5. Remove Theatre Admin");
+        System.out.println("6. Back");
+        
+        int choice = getValidChoice(1, 6);
+        
+        switch (choice) {
+            case 1:
+                createTheatre();
+                break;
+            case 2:
+                createTheatreAdmin();
+                break;
+            case 3:
+                viewTheatres();
+                break;
+            case 4:
+                removeTheatre();
+                break;
+            case 5:
+                removeTheatreAdmin();
+                break;
+            case 6:
+                stop();
+                break;
+            default:
+                printError("Invalid option");
+        }
+    }
+
     private boolean isValidEmail(String email) {
         if (email == null || email.isEmpty()) {
             return false;
@@ -54,9 +99,6 @@ public class SuperAdminController {
         return email.contains("@");
     }
 
-    /*
-     * isValidPhone - Checks if phone is 10 digits
-     */
     private boolean isValidPhone(String phone) {
         if (phone == null || phone.length() != 10) {
             return false;
@@ -69,11 +111,8 @@ public class SuperAdminController {
         return true;
     }
 
-    /*
-     * createTheatre - Adds a new theatre
-     */
     public void createTheatre() {
-        System.out.println("\n--- CREATE NEW THEATRE ---");
+        printSubHeader("CREATE NEW THEATRE");
         
         System.out.print("Enter Theatre Name: ");
         String name = sc.nextLine().trim();
@@ -82,34 +121,25 @@ public class SuperAdminController {
         String city = sc.nextLine().trim();
 
         if (name.isEmpty() || city.isEmpty()) {
-            System.out.println("Error: Name and City cannot be empty!");
+            printError("Name and City cannot be empty!");
             return;
         }
 
         Theatre theatre = new Theatre(0, name, city);
         theatreDAO.addTheatre(theatre);
         
-        System.out.println("\nTheatre '" + name + "' created successfully in " + city + "!");
-        System.out.println("Note: Please create a Theatre Admin and assign them to this Theatre.");
+        printSuccess("Theatre '" + name + "' created successfully in " + city + "!");
+        printInfo("Please create a Theatre Admin and assign them to this Theatre.");
     }
 
-    /*
-     * createTheatreAdmin - Creates a theatre admin
-     * 
-     * Steps:
-     * 1. Get admin details
-     * 2. Create user with role "Theatre Admin"
-     * 3. Ask to assign to a theatre
-     */
     public void createTheatreAdmin() {
-        System.out.println("\n--- CREATE NEW THEATRE ADMIN ---");
+        printSubHeader("CREATE NEW THEATRE ADMIN");
         
-        // Get admin details
         System.out.print("Enter Name: ");
         String name = sc.nextLine().trim();
         
         if (name.isEmpty()) {
-            System.out.println("Error: Name cannot be empty!");
+            printError("Name cannot be empty!");
             return;
         }
         
@@ -117,7 +147,7 @@ public class SuperAdminController {
         String email = sc.nextLine().trim();
         
         if (!isValidEmail(email)) {
-            System.out.println("Error: Email must contain '@' symbol!");
+            printError("Email must contain '@' symbol!");
             return;
         }
         
@@ -125,7 +155,7 @@ public class SuperAdminController {
         String phone = sc.nextLine().trim();
         
         if (!isValidPhone(phone)) {
-            System.out.println("Error: Phone number must be exactly 10 digits!");
+            printError("Phone number must be exactly 10 digits!");
             return;
         }
         
@@ -133,39 +163,31 @@ public class SuperAdminController {
         String password = sc.nextLine().trim();
 
         if (password.isEmpty()) {
-            System.out.println("Error: Password cannot be empty!");
+            printError("Password cannot be empty!");
             return;
         }
 
-        // Check if email exists
         if (userDAO.getUserByEmail(email) != null) {
-            System.out.println("Error: Email already exists!");
+            printError("Email already exists!");
             return;
         }
 
-        // Create user
         User admin = new User(0, name, email, phone, password, "Theatre Admin");
         userDAO.addUser(admin);
 
-        System.out.println("\nTheatre Admin '" + name + "' created successfully!");
-        
-        // Offer to assign theatre
+        printSuccess("Theatre Admin '" + name + "' created successfully!");
         assignTheatreToAdmin(admin);
     }
 
-    /*
-     * assignTheatreToAdmin - Assigns a theatre to an admin
-     */
     private void assignTheatreToAdmin(User admin) {
         List<String> cities = theatreDAO.getAllCities();
         
         if (cities.isEmpty()) {
-            System.out.println("\nNo theatres in system yet. Admin created but unassigned.");
-            System.out.println("Please create a theatre first.");
+            printInfo("No theatres in system yet. Admin created but unassigned.");
             return;
         }
 
-        System.out.println("\n--- ASSIGN THEATRE ---");
+        printSubHeader("ASSIGN THEATRE");
         System.out.println("Available cities:");
         for (int i = 0; i < cities.size(); i++) {
             System.out.println((i + 1) + ". " + cities.get(i));
@@ -175,13 +197,11 @@ public class SuperAdminController {
         int cityChoice = InputUtil.getIntInput(sc);
         
         if (cityChoice < 1 || cityChoice > cities.size()) {
-            System.out.println("Invalid selection. Admin created but unassigned.");
+            printError("Invalid selection. Admin created but unassigned.");
             return;
         }
         
         String selectedCity = cities.get(cityChoice - 1);
-        
-        // Get theatres in selected city
         List<Theatre> cityTheatres = theatreDAO.getTheatresByCity(selectedCity);
         
         System.out.println("\nTheatres in " + selectedCity + ":");
@@ -195,37 +215,30 @@ public class SuperAdminController {
         int theatreChoice = InputUtil.getIntInput(sc);
         
         if (theatreChoice < 1 || theatreChoice > cityTheatres.size()) {
-            System.out.println("Invalid selection. Admin created but unassigned.");
+            printError("Invalid selection. Admin created but unassigned.");
             return;
         }
         
         Theatre selected = cityTheatres.get(theatreChoice - 1);
         
-        // Check if theatre already has admin
         if (selected.getAdminId() > 0) {
-            System.out.print("This theatre already has an admin. Replace with new admin? (yes/no): ");
-            String confirm = sc.nextLine().trim().toLowerCase();
-            if (!confirm.equals("yes")) {
-                System.out.println("Admin assignment cancelled.");
+            if (!confirmAction("This theatre already has an admin. Replace?")) {
+                printInfo("Admin assignment cancelled.");
                 return;
             }
         }
 
-        // Assign admin to theatre
         selected.setAdminId(admin.getUserId());
         theatreDAO.updateTheatreAdmin(selected.getId(), admin.getUserId());
-        System.out.println("Success! Admin '" + admin.getName() + "' assigned to '" + selected.getName() + "'.");
+        printSuccess("Admin '" + admin.getName() + "' assigned to '" + selected.getName() + "'.");
     }
 
-    /*
-     * removeTheatre - Deletes a theatre
-     */
     public void removeTheatre() {
-        System.out.println("\n--- REMOVE THEATRE ---");
+        printSubHeader("REMOVE THEATRE");
         
         List<Theatre> theatres = theatreDAO.getAllTheatres();
         if (theatres.isEmpty()) {
-            System.out.println("No theatres found.");
+            printInfo("No theatres found.");
             return;
         }
 
@@ -235,33 +248,27 @@ public class SuperAdminController {
         int id = InputUtil.getIntInput(sc);
         
         if (id <= 0) {
-            System.out.println("Invalid theatre ID!");
+            printError("Invalid theatre ID!");
             return;
         }
         
-        System.out.print("Are you sure you want to remove this theatre? (yes/no): ");
-        String confirm = sc.nextLine().trim().toLowerCase();
-        
-        if (confirm.equals("yes")) {
+        if (confirmAction("Are you sure you want to remove this theatre?")) {
             theatreDAO.deleteTheatre(id);
+            printSuccess("Theatre removed successfully.");
         } else {
-            System.out.println("Removal cancelled.");
+            printInfo("Removal cancelled.");
         }
     }
 
-    /*
-     * removeTheatreAdmin - Deletes a theatre admin
-     */
     public void removeTheatreAdmin() {
-        System.out.println("\n--- REMOVE THEATRE ADMIN ---");
+        printSubHeader("REMOVE THEATRE ADMIN");
         
-        // Get all theatre admins
         List<User> admins = userDAO.getAllUsers().stream()
             .filter(u -> u.getRole().equals("Theatre Admin"))
             .collect(Collectors.toList());
         
         if (admins.isEmpty()) {
-            System.out.println("No Theatre Admins found.");
+            printInfo("No Theatre Admins found.");
             return;
         }
         
@@ -274,29 +281,24 @@ public class SuperAdminController {
         int id = InputUtil.getIntInput(sc);
         
         if (id <= 0) {
-            System.out.println("Invalid user ID!");
+            printError("Invalid user ID!");
             return;
         }
         
-        System.out.print("Are you sure you want to remove this admin? (yes/no): ");
-        String confirm = sc.nextLine().trim().toLowerCase();
-        
-        if (confirm.equals("yes")) {
+        if (confirmAction("Are you sure you want to remove this admin?")) {
             userDAO.deleteUser(id);
+            printSuccess("Admin removed successfully.");
         } else {
-            System.out.println("Removal cancelled.");
+            printInfo("Removal cancelled.");
         }
     }
 
-    /*
-     * viewTheatres - Shows all theatres
-     */
     public void viewTheatres() {
-        System.out.println("\n--- THEATRE LIST ---");
+        printSubHeader("THEATRE LIST");
         
         List<Theatre> theatres = theatreDAO.getAllTheatres();
         if (theatres.isEmpty()) {
-            System.out.println("No theatres found.");
+            printInfo("No theatres found.");
             return;
         }
 

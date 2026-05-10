@@ -6,6 +6,8 @@
  * - Encapsulation: Private fields
  * - Abstraction: Simple search interface
  * - Composition: Uses MovieRepositoryImpl
+ * - Inheritance: Extends BaseController
+ * - Polymorphism: Overrides showMenu() method
  * 
  * WHAT THIS FILE DOES:
  * - Search movies by name, language, genre
@@ -21,7 +23,9 @@
  */
 
 
+
 //------------Author Name: Darshan Raj---------------
+
 
 
 package org.expleo.TicketBookingJavaProject.controller;
@@ -43,38 +47,36 @@ import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.util.InputUtil;
 
-public class SearchController {
+public class SearchController extends BaseController {
 
     private MovieRepositoryImpl movieDAO = new MovieRepositoryImpl();
     private TheatreRepositoryImpl theatreDAO = new TheatreRepositoryImpl();
-
-    // Scanner for user input
-    private Scanner sc = new Scanner(System.in);
-    
-    // Reference to MovieController
     private MovieController movieController;
-    
-    // Movie selected from search (for booking)
     private Movie selectedMovie;
 
-    /*
-     * Constructor - Sets up the controller
-     */
     public SearchController(MovieController movieController) {
+        super();
         this.movieController = movieController;
+        printInfo("SearchController initialized");
     }
 
-    /*
-     * searchMovie - Main search menu
-     * 
-     * Shows search options and handles user choice.
-     * 
-     * Parameter:
-     * - allowBooking: true = can book after search, false = view only
-     */
+    public SearchController(MovieController movieController, Scanner sharedScanner) {
+        super(sharedScanner);
+        this.movieController = movieController;
+        printInfo("SearchController initialized");
+    }
+
+    @Override
+    public void showMenu() {
+        Movie result = searchMovie(true);
+        if (result != null) {
+            printSuccess("Movie selected: " + result.getTitle());
+        }
+    }
+
     public Movie searchMovie(boolean allowBooking) {
-        while (true) {
-            System.out.println("\n--- SEARCH OPTIONS ---");
+        while (isRunning) {
+            printSubHeader("SEARCH OPTIONS");
             System.out.println("1. Search by Movie Name");
             System.out.println("2. Search by Language");
             System.out.println("3. Search by Genre");
@@ -82,8 +84,7 @@ public class SearchController {
             System.out.println("5. Search by Theatre");
             System.out.println("6. Back to Menu");
             
-            System.out.print("Enter your choice: ");
-            int choice = InputUtil.getIntInput(sc);
+            int choice = getValidChoice(1, 6);
             
             switch (choice) {
                 case 1:
@@ -97,39 +98,33 @@ public class SearchController {
                 case 5:
                     return searchByTheatre(allowBooking);
                 case 6:
+                    stop();
                     return null;
                 default:
-                    System.out.println("Invalid choice! Please try again.");
+                    printError("Invalid choice!");
             }
         }
+        return null;
     }
 
-    /*
-     * searchByMovieName - Find movies by title
-     * 
-     * Shows movies matching the search term.
-     * If allowBooking is true, lets user select a movie.
-     */
     private Movie searchByMovieName(boolean allowBooking) {
-        System.out.println("\n--- SEARCH BY MOVIE NAME ---");
+        printSubHeader("SEARCH BY MOVIE NAME");
         System.out.print("Enter Movie Name to search: ");
         String searchQuery = sc.nextLine().trim().toLowerCase();
         
         if (searchQuery.isEmpty()) {
-            System.out.println("Error: Please enter a movie name!");
+            printError("Please enter a movie name!");
             return null;
         }
 
-        // Search in database
         List<Movie> matchingMovies = movieDAO.searchByTitle(searchQuery);
         
         if (matchingMovies.isEmpty()) {
-            System.out.println("No movies found matching '" + searchQuery + "'");
+            printInfo("No movies found matching '" + searchQuery + "'");
             return null;
         }
 
-        // Display movies
-        System.out.println("\n--- MATCHING MOVIES ---");
+        printSubHeader("MATCHING MOVIES");
         List<Movie> uniqueMovies = getUniqueMovies(matchingMovies);
         
         for (int i = 0; i < uniqueMovies.size(); i++) {
@@ -137,39 +132,17 @@ public class SearchController {
             System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ") | " + m.getGenre());
         }
 
-        // Offer to book
         if (allowBooking) {
-            System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
-            String choice = sc.nextLine().trim().toLowerCase();
-            
-            if (choice.equals("yes")) {
-                System.out.print("Select Movie (Number): ");
-                int index = InputUtil.getIntInput(sc);
-                
-                if (index >= 1 && index <= uniqueMovies.size()) {
-                    selectedMovie = uniqueMovies.get(index - 1);
-                    System.out.println("\nMovie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
-                    System.out.println("Please proceed to 'Book Ticket' option to complete your booking.");
-                    return selectedMovie;
-                } else {
-                    System.out.println("Invalid selection!");
-                }
-            }
+            return selectMovieForBooking(uniqueMovies);
         }
         
         return null;
     }
 
-    /*
-     * searchByLanguage - Find movies by language
-     * 
-     * Shows available languages, then movies in that language.
-     */
     private Movie searchByLanguage(boolean allowBooking) {
-        System.out.println("\n--- SEARCH BY LANGUAGE ---");
+        printSubHeader("SEARCH BY LANGUAGE");
         System.out.println("Available Languages:");
         
-        // Get all unique languages
         Set<String> languages = new HashSet<>();
         List<Movie> allMovies = movieDAO.getAllMovies();
         for (Movie m : allMovies) {
@@ -177,11 +150,10 @@ public class SearchController {
         }
         
         if (languages.isEmpty()) {
-            System.out.println("No languages available (no movies in system).");
+            printInfo("No languages available (no movies in system).");
             return null;
         }
 
-        // Show languages
         List<String> langList = new ArrayList<>(languages);
         Collections.sort(langList);
         
@@ -193,22 +165,19 @@ public class SearchController {
         int langChoice = InputUtil.getIntInput(sc);
         
         if (langChoice < 1 || langChoice > langList.size()) {
-            System.out.println("Invalid selection!");
+            printError("Invalid selection!");
             return null;
         }
         
         String selectedLanguage = langList.get(langChoice - 1);
-        
-        // Search movies
         List<Movie> matchingMovies = movieDAO.searchByLanguage(selectedLanguage);
         
         if (matchingMovies.isEmpty()) {
-            System.out.println("No movies found in " + selectedLanguage + " language.");
+            printInfo("No movies found in " + selectedLanguage + " language.");
             return null;
         }
 
-        // Display movies
-        System.out.println("\n--- MOVIES IN " + selectedLanguage.toUpperCase() + " ---");
+        printSubHeader("MOVIES IN " + selectedLanguage.toUpperCase());
         List<Movie> uniqueMovies = getUniqueMovies(matchingMovies);
         
         for (int i = 0; i < uniqueMovies.size(); i++) {
@@ -216,39 +185,17 @@ public class SearchController {
             System.out.println((i + 1) + ". " + m.getTitle() + " | " + m.getGenre() + " | " + m.getDuration() + " mins");
         }
 
-        // Offer to book
         if (allowBooking) {
-            System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
-            String choice = sc.nextLine().trim().toLowerCase();
-            
-            if (choice.equals("yes")) {
-                System.out.print("Select Movie (Number): ");
-                int index = InputUtil.getIntInput(sc);
-                
-                if (index >= 1 && index <= uniqueMovies.size()) {
-                    selectedMovie = uniqueMovies.get(index - 1);
-                    System.out.println("\nMovie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
-                    System.out.println("Please proceed to 'Book Ticket' option to complete your booking.");
-                    return selectedMovie;
-                } else {
-                    System.out.println("Invalid selection!");
-                }
-            }
+            return selectMovieForBooking(uniqueMovies);
         }
         
         return null;
     }
 
-    /*
-     * searchByGenre - Find movies by genre
-     * 
-     * Shows available genres, then movies in that genre.
-     */
     private Movie searchByGenre(boolean allowBooking) {
-        System.out.println("\n--- SEARCH BY GENRE ---");
+        printSubHeader("SEARCH BY GENRE");
         System.out.println("Available Genres:");
         
-        // Get all unique genres
         Set<String> genres = new HashSet<>();
         List<Movie> allMovies = movieDAO.getAllMovies();
         for (Movie m : allMovies) {
@@ -258,11 +205,10 @@ public class SearchController {
         }
         
         if (genres.isEmpty()) {
-            System.out.println("No genres available (no movies in system).");
+            printInfo("No genres available (no movies in system).");
             return null;
         }
 
-        // Show genres
         List<String> genreList = new ArrayList<>(genres);
         Collections.sort(genreList);
         
@@ -274,7 +220,7 @@ public class SearchController {
         int genreChoice = InputUtil.getIntInput(sc);
         
         if (genreChoice < 1 || genreChoice > genreList.size()) {
-            System.out.println("Invalid selection!");
+            printError("Invalid selection!");
             return null;
         }
         
@@ -285,12 +231,11 @@ public class SearchController {
             .collect(java.util.stream.Collectors.toList());
         
         if (matchingMovies.isEmpty()) {
-            System.out.println("No movies found in " + selectedGenre + " genre.");
+            printInfo("No movies found in " + selectedGenre + " genre.");
             return null;
         }
 
-        // Display movies
-        System.out.println("\n--- MOVIES IN " + selectedGenre.toUpperCase() + " GENRE ---");
+        printSubHeader("MOVIES IN " + selectedGenre.toUpperCase() + " GENRE");
         List<Movie> uniqueMovies = getUniqueMovies(matchingMovies);
         
         for (int i = 0; i < uniqueMovies.size(); i++) {
@@ -298,46 +243,23 @@ public class SearchController {
             System.out.println((i + 1) + ". " + m.getTitle() + " | " + m.getLanguage() + " | " + m.getDuration() + " mins");
         }
 
-        // Offer to book
         if (allowBooking) {
-            System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
-            String choice = sc.nextLine().trim().toLowerCase();
-            
-            if (choice.equals("yes")) {
-                System.out.print("Select Movie (Number): ");
-                int index = InputUtil.getIntInput(sc);
-                
-                if (index >= 1 && index <= uniqueMovies.size()) {
-                    selectedMovie = uniqueMovies.get(index - 1);
-                    System.out.println("\nMovie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
-                    System.out.println("Please proceed to 'Book Ticket' option to complete your booking.");
-                    return selectedMovie;
-                } else {
-                    System.out.println("Invalid selection!");
-                }
-            }
+            return selectMovieForBooking(uniqueMovies);
         }
         
         return null;
     }
 
-    /*
-     * searchByCity - Find movies by city
-     * 
-     * Shows theatres in a city, then movies at those theatres.
-     */
     private Movie searchByCity(boolean allowBooking) {
-        System.out.println("\n--- SEARCH BY CITY ---");
+        printSubHeader("SEARCH BY CITY");
         
-        // Get cities with theatres
         List<String> cities = theatreDAO.getAllCities();
         
         if (cities.isEmpty()) {
-            System.out.println("No cities available (no theatres in system).");
+            printInfo("No cities available (no theatres in system).");
             return null;
         }
 
-        // Show cities
         System.out.println("Available Cities:");
         Collections.sort(cities);
         
@@ -349,21 +271,18 @@ public class SearchController {
         int cityChoice = InputUtil.getIntInput(sc);
         
         if (cityChoice < 1 || cityChoice > cities.size()) {
-            System.out.println("Invalid selection!");
+            printError("Invalid selection!");
             return null;
         }
         
         String selectedCity = cities.get(cityChoice - 1);
-        
-        // Get theatres in this city
         List<Theatre> theatres = theatreDAO.getTheatresByCity(selectedCity);
         
         if (theatres.isEmpty()) {
-            System.out.println("No theatres found in " + selectedCity + ".");
+            printInfo("No theatres found in " + selectedCity + ".");
             return null;
         }
 
-        // Get movies from all theatres in this city
         Set<Movie> cityMovies = new HashSet<>();
         for (Theatre t : theatres) {
             List<Movie> theatreMovies = movieDAO.getMoviesByTheatre(t.getId());
@@ -371,12 +290,11 @@ public class SearchController {
         }
         
         if (cityMovies.isEmpty()) {
-            System.out.println("No movies available in " + selectedCity + ".");
+            printInfo("No movies available in " + selectedCity + ".");
             return null;
         }
 
-        // Display movies
-        System.out.println("\n--- MOVIES IN " + selectedCity.toUpperCase() + " ---");
+        printSubHeader("MOVIES IN " + selectedCity.toUpperCase());
         List<Movie> uniqueMovies = getUniqueMovies(new ArrayList<>(cityMovies));
         
         for (int i = 0; i < uniqueMovies.size(); i++) {
@@ -384,46 +302,23 @@ public class SearchController {
             System.out.println((i + 1) + ". " + m.getTitle() + " | " + m.getLanguage() + " | " + m.getGenre());
         }
 
-        // Offer to book
         if (allowBooking) {
-            System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
-            String choice = sc.nextLine().trim().toLowerCase();
-            
-            if (choice.equals("yes")) {
-                System.out.print("Select Movie (Number): ");
-                int index = InputUtil.getIntInput(sc);
-                
-                if (index >= 1 && index <= uniqueMovies.size()) {
-                    selectedMovie = uniqueMovies.get(index - 1);
-                    System.out.println("\nMovie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
-                    System.out.println("Please proceed to 'Book Ticket' option to complete your booking.");
-                    return selectedMovie;
-                } else {
-                    System.out.println("Invalid selection!");
-                }
-            }
+            return selectMovieForBooking(uniqueMovies);
         }
         
         return null;
     }
 
-    /*
-     * searchByTheatre - Find movies by theatre
-     * 
-     * Shows all theatres, then movies at selected theatre.
-     */
     private Movie searchByTheatre(boolean allowBooking) {
-        System.out.println("\n--- SEARCH BY THEATRE ---");
+        printSubHeader("SEARCH BY THEATRE");
         
-        // Get all theatres
         List<Theatre> allTheatres = theatreDAO.getAllTheatres();
         
         if (allTheatres.isEmpty()) {
-            System.out.println("No theatres available in the system.");
+            printInfo("No theatres available in the system.");
             return null;
         }
 
-        // Group theatres by city
         Map<String, List<Theatre>> theatresByCity = new HashMap<>();
         for (Theatre t : allTheatres) {
             theatresByCity.computeIfAbsent(t.getCity(), k -> new ArrayList<>()).add(t);
@@ -446,22 +341,19 @@ public class SearchController {
         int theatreChoice = InputUtil.getIntInput(sc);
         
         if (theatreChoice < 1 || theatreChoice > theatreList.size()) {
-            System.out.println("Invalid selection!");
+            printError("Invalid selection!");
             return null;
         }
         
         Theatre selectedTheatre = theatreList.get(theatreChoice - 1);
-        
-        // Get movies at this theatre
         List<Movie> movies = movieDAO.getMoviesByTheatre(selectedTheatre.getId());
         
         if (movies.isEmpty()) {
-            System.out.println("No movies available in " + selectedTheatre.getName() + ".");
+            printInfo("No movies available in " + selectedTheatre.getName() + ".");
             return null;
         }
 
-        // Display movies
-        System.out.println("\n--- MOVIES AT " + selectedTheatre.getName().toUpperCase() + " ---");
+        printSubHeader("MOVIES AT " + selectedTheatre.getName().toUpperCase());
         List<Movie> uniqueMovies = getUniqueMovies(movies);
         
         for (int i = 0; i < uniqueMovies.size(); i++) {
@@ -469,35 +361,32 @@ public class SearchController {
             System.out.println((i + 1) + ". " + m.getTitle() + " | " + m.getLanguage() + " | " + m.getGenre());
         }
 
-        // Offer to book
         if (allowBooking) {
-            System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
-            String choice = sc.nextLine().trim().toLowerCase();
-            
-            if (choice.equals("yes")) {
-                System.out.print("Select Movie (Number): ");
-                int index = InputUtil.getIntInput(sc);
-                
-                if (index >= 1 && index <= uniqueMovies.size()) {
-                    selectedMovie = uniqueMovies.get(index - 1);
-                    System.out.println("\nMovie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
-                    System.out.println("Please proceed to 'Book Ticket' option to complete your booking.");
-                    return selectedMovie;
-                } else {
-                    System.out.println("Invalid selection!");
-                }
-            }
+            return selectMovieForBooking(uniqueMovies);
         }
         
         return null;
     }
 
-    /*
-     * getUniqueMovies - Removes duplicate movies
-     * 
-     * Same movie might be in multiple theatres.
-     * This method keeps only one copy based on title+language.
-     */
+    private Movie selectMovieForBooking(List<Movie> movies) {
+        System.out.print("\nDo you want to book a ticket for one of these movies? (yes/no): ");
+        String choice = sc.nextLine().trim().toLowerCase();
+        
+        if (choice.equals("yes")) {
+            System.out.print("Select Movie (Number): ");
+            int index = InputUtil.getIntInput(sc);
+            
+            if (index >= 1 && index <= movies.size()) {
+                selectedMovie = movies.get(index - 1);
+                printSuccess("Movie Selected: " + selectedMovie.getTitle() + " (" + selectedMovie.getLanguage() + ")");
+                return selectedMovie;
+            } else {
+                printError("Invalid selection!");
+            }
+        }
+        return null;
+    }
+
     private List<Movie> getUniqueMovies(List<Movie> movies) {
         Map<String, Movie> uniqueMap = new LinkedHashMap<>();
         for (Movie m : movies) {
@@ -507,7 +396,6 @@ public class SearchController {
         return new ArrayList<>(uniqueMap.values());
     }
 
-    // Getter and setter for selected movie
     public Movie getSelectedMovie() {
         return selectedMovie;
     }
@@ -516,16 +404,10 @@ public class SearchController {
         this.selectedMovie = movie;
     }
 
-    /*
-     * clearSelectedMovie - Clears the selected movie
-     */
     public void clearSelectedMovie() {
         selectedMovie = null;
     }
 
-    /*
-     * getCitiesWithMovies - Gets cities where movies are available
-     */
     public List<String> getCitiesWithMovies() {
         Set<String> cities = new HashSet<>();
         List<Movie> movies = movieDAO.getAllMovies();
@@ -542,9 +424,6 @@ public class SearchController {
         return cityList;
     }
 
-    /*
-     * getTheatresForSelectedMovie - Gets theatres showing selected movie
-     */
     public List<Theatre> getTheatresForSelectedMovie(String city) {
         if (selectedMovie == null) {
             return new ArrayList<>();
@@ -566,7 +445,6 @@ public class SearchController {
             }
             
             if (hasMovie) {
-                // Apply city filter if provided
                 if (city == null || city.isEmpty() || t.getCity().equalsIgnoreCase(city)) {
                     result.add(t);
                 }

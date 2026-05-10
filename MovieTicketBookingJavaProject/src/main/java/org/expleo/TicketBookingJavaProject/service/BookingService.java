@@ -86,6 +86,7 @@ public class BookingService {
         if (booking == null) {
             throw new BookingNotFoundException("Booking with ID " + bookingId + " not found!");
         }
+        
 
         // Build session key to find seats
         String sessionKey = booking.getTheatreId() + "_" + booking.getMovieId() + "_" + 
