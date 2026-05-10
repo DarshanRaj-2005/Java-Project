@@ -35,7 +35,6 @@ package org.expleo.TicketBookingJavaProject.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -47,11 +46,6 @@ import org.expleo.TicketBookingJavaProject.model.Booking;
 import org.expleo.TicketBookingJavaProject.model.Movie;
 import org.expleo.TicketBookingJavaProject.model.Seat;
 import org.expleo.TicketBookingJavaProject.model.Theatre;
-import org.expleo.TicketBookingJavaProject.model.User;
-import org.expleo.TicketBookingJavaProject.repository.impl.BookingRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.MovieRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.TheatreRepositoryImpl;
-import org.expleo.TicketBookingJavaProject.repository.impl.UserRepositoryImpl;
 import org.expleo.TicketBookingJavaProject.service.BookingService;
 import org.expleo.TicketBookingJavaProject.service.PaymentService;
 import org.expleo.TicketBookingJavaProject.service.SeatService;
@@ -192,8 +186,11 @@ public class BookingController extends BaseController {
             city = selectCity();
             if (city == null) return;
 
-            theatre = selectTheatre(city);
-            if (theatre == null) return;
+	public BookingController() {
+		seatService = new SeatService();
+		bookingService = new BookingService();
+		paymentService = new PaymentService();
+	}
 
             movie = selectMovie(theatre.getId());
             if (movie == null) return;
@@ -219,8 +216,7 @@ public class BookingController extends BaseController {
             citiesSet.add(t.getCity());
         }
 
-        List<String> cities = new ArrayList<>(citiesSet);
-        Collections.sort(cities);
+        System.out.println("========== SELECT SHOWTIME ==========");
 
         printSubHeader("SELECT CITY");
         System.out.println("Available cities where '" + movie.getTitle() + "' is playing:");
@@ -288,7 +284,7 @@ public class BookingController extends BaseController {
             return null;
         }
 
-        return cities.get(choice - 1);
+        return shows.get(choice - 1);
     }
 
     private Theatre selectTheatre(String city) {
@@ -304,16 +300,14 @@ public class BookingController extends BaseController {
             System.out.println((i + 1) + ". " + theatres.get(i).getName());
         }
 
-        System.out.print("Choice: ");
-        int choice = InputUtil.getIntInput(sc);
+            seatService.displaySeatLayout(sessionKey);
 
         if (choice < 1 || choice > theatres.size()) {
             printError("Invalid selection!");
             return null;
         }
 
-        return theatres.get(choice - 1);
-    }
+            while (selectedSeats.size() < ticketCount) {
 
     private Movie selectMovie(int theatreId) {
         List<Movie> movies = movieController.getMoviesForTheatre(theatreId);
@@ -329,16 +323,18 @@ public class BookingController extends BaseController {
             System.out.println((i + 1) + ". " + m.getTitle() + " (" + m.getLanguage() + ") | " + m.getGenre() + " | " + m.getDuration() + " mins");
         }
 
-        System.out.print("Choice: ");
-        int choice = InputUtil.getIntInput(sc);
+                if (seat == null) {
+                    System.out.println("Invalid seat label.");
+                    continue;
+                }
 
         if (choice < 1 || choice > movies.size()) {
             printError("Invalid selection!");
             return null;
         }
 
-        return movies.get(choice - 1);
-    }
+                selectedSeats.add(seat);
+                selectedLabels.add(label);
 
     private String selectShowtime() {
         List<String> shows = Arrays.asList("10:00 AM", "01:30 PM", "06:00 PM", "10:00 PM");
@@ -348,16 +344,15 @@ public class BookingController extends BaseController {
             System.out.println((i + 1) + ". " + shows.get(i));
         }
 
-        System.out.print("Choice: ");
-        int choice = InputUtil.getIntInput(sc);
+            BillDetails bill = new BillDetails(ticketCount, totalAmount, 3.5, 10);
 
         if (choice < 1 || choice > shows.size()) {
             printError("Invalid selection!");
             return null;
         }
 
-        return shows.get(choice - 1);
-    }
+            System.out.print("Proceed to payment? (yes/no): ");
+            String proceed = sc.nextLine().trim();
 
     private void bookSeats(Movie movie, Theatre theatre, String city, String showtime, int ticketCount, int userId) {
         String sessionKey = theatre.getId() + "_" + movie.getId() + "_" + showtime.replace(" ", "_").replace(":", "");
@@ -483,8 +478,8 @@ public class BookingController extends BaseController {
     private List<String> selectSeats(String sessionKey, int ticketCount) {
         List<String> selectedSeats = new ArrayList<>();
 
-        System.out.println("Enter " + ticketCount + " seat labels to book (comma-separated, e.g., A1, A2): ");
-        String input = sc.nextLine().toUpperCase();
+            System.out.print("Choice: ");
+            int choice = InputUtil.getIntInput(sc);
 
         String[] labels = input.split("[,\\s]+");
         for (String label : labels) {
@@ -509,8 +504,8 @@ public class BookingController extends BaseController {
             return null;
         }
 
-        return selectedSeats;
-    }
+                        paymentService.validateCardPayment(card, cvv);
+                        return true;
 
     private double[] calculatePrice(List<String> seats) {
         double totalPrice = 0;
@@ -637,8 +632,6 @@ public class BookingController extends BaseController {
                     }
                     return;
                 }
-            }
-        }
 
         printSuccess("Payment Successful via " + method + "!");
 
@@ -688,8 +681,8 @@ public class BookingController extends BaseController {
         System.out.print("Enter Booking ID: ");
         String id = sc.nextLine().toUpperCase().trim();
 
-        try {
-            Booking booking = bookingDAO.getBookingById(id);
+		try {
+			boolean cancelled = bookingService.cancelBooking(bookingId);
 
             if (booking == null) {
                 throw new BookingNotFoundException("Booking with ID " + id + " not found!");

@@ -1,158 +1,42 @@
-/*
- * FILE: SeatService.java
- * PURPOSE: Handles seat-related business logic.
- * 
- * OOPS CONCEPTS USED:
- * - Encapsulation: Private fields
- * - Abstraction: Simple seat interface
- * - Composition: Uses SeatRepositoryImpl
- * 
- * WHAT THIS FILE DOES:
- * - Gets seat layout
- * - Gets available/booked seats
- * - Validates seat selection
- * - Updates seat status
- */
-
-
-
-//------------Author Name: Rohini---------------
-
-
-
 package org.expleo.TicketBookingJavaProject.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.expleo.TicketBookingJavaProject.model.Seat;
+import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepository;
 import org.expleo.TicketBookingJavaProject.repository.impl.SeatRepositoryImpl;
 
-/*
- * Service class for seat-related operations.
- * Handles business logic for seat management.
- */
 public class SeatService {
 
-    private SeatRepositoryImpl seatDAO = new SeatRepositoryImpl();
+	private SeatRepository seatRepository = new SeatRepositoryImpl();
 
-    /*
-     * getSeatLayout - Gets all seats for a session
-     * 
-     * Parameter: sessionKey (format: theatre_movie_showtime)
-     * Returns: List of all seats
-     */
-    public List<Seat> getSeatLayout(String sessionKey) {
-        return seatDAO.getSeatsForSession(sessionKey);
-    }
+	public List<Seat> getAvailableSeats(String sessionKey) {
+	    return seatRepository.getSeatsByShowId(sessionKey);
+	}
 
-    /*
-     * getAvailableSeats - Gets only available seats
-     * 
-     * Returns: List of seats with status "AVAILABLE"
-     */
-    public List<Seat> getAvailableSeats(String sessionKey) {
-        List<Seat> available = new ArrayList<>();
-        for (Seat s : seatDAO.getSeatsForSession(sessionKey)) {
-            if (s.getStatus().equalsIgnoreCase("AVAILABLE")) {
-                available.add(s);
+	public Seat findSeatByLabel(String sessionKey, String seatLabel) {
+	    return seatRepository.findSeatByLabel(sessionKey, seatLabel);
+	}
+
+    public void displaySeatLayout(String sessionKey) {
+
+    	List<Seat> seats = getAvailableSeats(sessionKey);
+
+        System.out.println("\n========== SCREEN ==========");
+
+        for (Seat seat : seats) {
+
+            if (seat.isBooked()) {
+                System.out.printf("[XX] ");
+            } else {
+                System.out.printf("[%s] ", seat.getSeatLabel());
             }
-        }
-        return available;
-    }
 
-    /*
-     * getBookedSeats - Gets only booked seats
-     * 
-     * Returns: List of seats with status "BOOKED"
-     */
-    public List<Seat> getBookedSeats(String sessionKey) {
-        List<Seat> booked = new ArrayList<>();
-        for (Seat s : seatDAO.getSeatsForSession(sessionKey)) {
-            if (s.getStatus().equalsIgnoreCase("BOOKED")) {
-                booked.add(s);
-            }
-        }
-        return booked;
-    }
-
-    /*
-     * getSeatByLabel - Finds a seat by label
-     * 
-     * Parameter: label like "A1"
-     * Returns: Seat object or null
-     */
-    public Seat getSeatByLabel(String sessionKey, String label) {
-        for (Seat s : seatDAO.getSeatsForSession(sessionKey)) {
-            if (s.getSeatLabel().equalsIgnoreCase(label)) {
-                return s;
-            }
-        }
-        return null;
-    }
-
-    /*
-     * validateSingleSeatSelection - Validates one seat
-     * 
-     * Checks:
-     * - Seat exists
-     * - Seat is available
-     * 
-     * Returns: "VALID" or error message
-     */
-    public String validateSingleSeatSelection(String sessionKey, String label) {
-        Seat seat = getSeatByLabel(sessionKey, label);
-
-        if (seat == null) {
-            return "Error: Seat '" + label + "' does not exist.";
-        }
-
-        if (seat.getStatus().equalsIgnoreCase("BOOKED")) {
-            return "Error: Seat '" + label + "' is already booked.";
-        }
-
-        return "VALID";
-    }
-
-    /*
-     * validateMultipleSeatSelection - Validates multiple seats
-     * 
-     * Checks:
-     * - Correct number of seats selected
-     * - No duplicate seats
-     * - All seats exist and are available
-     * 
-     * Returns: "VALID" or error message
-     */
-    public String validateMultipleSeatSelection(String sessionKey, List<String> labels, int count) {
-        // Check count matches
-        if (labels.size() != count) {
-            return "Error: Please select exactly " + count + " seats.";
-        }
-
-        // Check for duplicates
-        Set<String> uniqueSeats = new HashSet<>(labels);
-        if (uniqueSeats.size() != labels.size()) {
-            return "Error: You have selected duplicate seats.";
-        }
-
-        // Validate each seat
-        for (String label : labels) {
-            String result = validateSingleSeatSelection(sessionKey, label);
-            if (!result.equals("VALID")) {
-                return result;
+            if (seat.getSeatLabel().endsWith("5")) {
+                System.out.println();
             }
         }
 
-        return "VALID";
-    }
-
-    /*
-     * updateSeat - Updates seat in database
-     */
-    public void updateSeat(Seat seat) {
-        seatDAO.updateSeat(seat);
+        System.out.println();
     }
 }

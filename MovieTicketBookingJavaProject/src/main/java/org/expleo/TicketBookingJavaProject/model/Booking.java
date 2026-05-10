@@ -1,145 +1,155 @@
-/*
- * FILE: Booking.java
- * PURPOSE: Stores information about a ticket booking.
- * 
- * OOPS CONCEPTS USED:
- * - Encapsulation: All fields are private, accessed through getters and setters
- * - Abstraction: Shows booking details without exposing complexity
- * 
- * HOW IT'S USED:
- * - Created when a user books tickets
- * - Stored in database for future reference
- * - Used to show booking history
- */
-
-
-//------------Author Name: Rohini, Tamil Kumar, Krishna Prasath---------------
-
-
-
 package org.expleo.TicketBookingJavaProject.model;
 
 import java.util.List;
 
-/*
- * WHAT THIS CLASS DOES:
- * Represents a single booking made by a user.
- * Contains details like which movie, which seats, how much paid, etc.
- * 
- * EXAMPLE:
- * Booking booking = new Booking("BK12345", 1, "M001", 1, "10:00 AM", ["A1", "A2"], 500.0, "CONFIRMED");
- */
 public class Booking {
 
-    // Unique booking ID (like "BK12345ABC")
+    // Unique booking ID (Example: BK1712667123456)
     private String bookingId;
 
-    // ID of user who made booking (0 means guest/unregistered user)
-    private int userId;
+    // User ID from users table
+    private String userId;
 
-    // ID of the movie being watched
+    // Movie ID
     private String movieId;
 
-    // ID of the theatre
+    // Theatre ID
     private int theatreId;
 
-    // Showtime (like "10:00 AM", "06:00 PM")
+    // Show time (Example: "10:00 AM")
     private String showtime;
 
-    // List of seat labels booked (like ["A1", "A2", "A3"])
+    // Session key used internally for seat mapping
+    // Example: MOV001_1_10:00 AM
+    private String sessionKey;
+
+    // Seat labels used by team members
+    // Example: ["A1", "A2"]
     private List<String> seatLabels;
 
-    // Total amount paid for this booking
+    // Rohini module: complete Seat objects
+    private List<Seat> bookedSeats;
+
+    // Total booking amount
     private double totalAmount;
 
-    // Status: "CONFIRMED" or "CANCELLED"
+    // Booking status
+    // Example: CONFIRMED / CANCELLED
     private String status;
 
-    /*
-     * Constructor - Creates a new Booking object
-     * 
-     * Parameters:
-     * - bookingId: Unique ID for this booking
-     * - userId: Who booked (0 for guests)
-     * - movieId: Which movie
-     * - theatreId: Which theatre
-     * - showtime: When the show is
-     * - seatLabels: Which seats
-     * - totalAmount: How much paid
-     * - status: CONFIRMED or CANCELLED
-     */
-    public Booking(String bookingId, int userId, String movieId, int theatreId, String showtime,
-                   List<String> seatLabels, double totalAmount, String status) {
+    // Default constructor
+    public Booking() {
+    }
+
+    // Constructor without bookedSeats
+    public Booking(String bookingId, String userId, String movieId,
+                   int theatreId, String showtime, String sessionKey,
+                   List<String> seatLabels,
+                   double totalAmount, String status) {
+
         this.bookingId = bookingId;
         this.userId = userId;
         this.movieId = movieId;
         this.theatreId = theatreId;
         this.showtime = showtime;
+        this.sessionKey = sessionKey;
         this.seatLabels = seatLabels;
         this.totalAmount = totalAmount;
         this.status = status;
     }
 
-    // Getter methods - Read booking details
+    // Constructor with bookedSeats
+    public Booking(String bookingId, String userId, String movieId,
+                   int theatreId, String showtime, String sessionKey,
+                   List<String> seatLabels, List<Seat> bookedSeats,
+                   double totalAmount, String status) {
+
+        this.bookingId = bookingId;
+        this.userId = userId;
+        this.movieId = movieId;
+        this.theatreId = theatreId;
+        this.showtime = showtime;
+        this.sessionKey = sessionKey;
+        this.seatLabels = seatLabels;
+        this.bookedSeats = bookedSeats;
+        this.totalAmount = totalAmount;
+        this.status = status;
+    }
+
     public String getBookingId() {
         return bookingId;
     }
 
-    public int getUserId() {
+    public void setBookingId(String bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public String getUserId() {
         return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getMovieId() {
         return movieId;
     }
 
-    public int getTheatreId() {
-        return theatreId;
-    }
-
-    public String getShowtime() {
-        return showtime;
-    }
-
-    public List<String> getSeatLabels() {
-        return seatLabels;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    // Setter methods - Update booking details
-    public void setBookingId(String bookingId) {
-        this.bookingId = bookingId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public void setMovieId(String movieId) {
         this.movieId = movieId;
+    }
+
+    public int getTheatreId() {
+        return theatreId;
     }
 
     public void setTheatreId(int theatreId) {
         this.theatreId = theatreId;
     }
 
+    public String getShowtime() {
+        return showtime;
+    }
+
     public void setShowtime(String showtime) {
         this.showtime = showtime;
+    }
+
+    public String getSessionKey() {
+        return sessionKey;
+    }
+
+    public void setSessionKey(String sessionKey) {
+        this.sessionKey = sessionKey;
+    }
+
+    public List<String> getSeatLabels() {
+        return seatLabels;
     }
 
     public void setSeatLabels(List<String> seatLabels) {
         this.seatLabels = seatLabels;
     }
 
+    public List<Seat> getBookedSeats() {
+        return bookedSeats;
+    }
+
+    public void setBookedSeats(List<Seat> bookedSeats) {
+        this.bookedSeats = bookedSeats;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
     public void setTotalAmount(double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public void setStatus(String status) {
