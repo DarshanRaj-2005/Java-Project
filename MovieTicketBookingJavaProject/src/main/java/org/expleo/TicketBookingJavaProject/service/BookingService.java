@@ -71,6 +71,7 @@ public class BookingService {
         if (bookingId == null || bookingId.trim().isEmpty()) {
             throw new BookingNotFoundException("Invalid booking ID");
         }
+        
 
         // Temporary implementation
         // Later connect with repository/DAO cancel method
